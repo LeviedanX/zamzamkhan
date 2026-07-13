@@ -5,6 +5,11 @@
 *.html diff=html
 *.md diff=markdown
 *.php diff=php
+*.js diff=javascript
+*.json diff=json
+*.ps1 diff=powershell
+*.sh eol=lf
+*.bat eol=crlf
 
 /.github export-ignore
 CHANGELOG.md export-ignore

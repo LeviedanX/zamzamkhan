@@ -1,10 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "leviedanx/zamzamkhan",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Website company profile dan CMS PT Zam Zam Khan, Bisnis & Legal Konsultan.",
     "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.8",
