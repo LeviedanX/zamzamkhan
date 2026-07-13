@@ -89,8 +89,8 @@
 @if ($results->isEmpty())
     <div class="admin-empty-inline mb-6">Tidak ada data yang sesuai dengan filter.</div>
 @else
-    <div class="admin-table-card overflow-x-auto">
-        <table class="w-full min-w-180 text-sm">
+    <div class="admin-table-card admin-table-card--responsive overflow-x-auto">
+        <table class="admin-responsive-table w-full min-w-180 text-sm">
             <thead>
                 <tr>
                     <th class="px-4 py-3 text-left">Pemohon</th>
@@ -102,10 +102,10 @@
             <tbody>
                 @foreach ($results as $row)
                     <tr class="border-t">
-                        <td class="px-4 py-3 font-semibold">{{ $row->applicantName() }}</td>
-                        <td class="px-4 py-3">{{ $row->category?->name ?? '-' }}</td>
-                        <td class="px-4 py-3"><span class="admin-process-badge">{{ $row->process_status }}</span></td>
-                        <td class="px-4 py-3">{{ $row->submitted_at?->translatedFormat('d M Y') ?? '-' }}</td>
+                        <td data-label="Pemohon" class="px-4 py-3 font-semibold">{{ $row->applicantName() }}</td>
+                        <td data-label="Kategori" class="px-4 py-3">{{ $row->category?->name ?? '-' }}</td>
+                        <td data-label="Status" class="px-4 py-3"><span class="admin-process-badge">{{ $row->process_status }}</span></td>
+                        <td data-label="Tanggal masuk" class="px-4 py-3">{{ $row->submitted_at?->translatedFormat('d M Y') ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>

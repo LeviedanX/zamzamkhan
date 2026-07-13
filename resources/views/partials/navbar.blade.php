@@ -71,21 +71,22 @@
         </div>
     </nav>
 
-    {{-- Mobile drawer --}}
-    <div
-        x-show="open" x-cloak
-        @keydown.escape.window="closeMenu()"
-        @keyup.escape.window="closeMenu()"
-        role="dialog" aria-modal="true" aria-label="Menu navigasi"
-        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-[80] xl:hidden">
-        <div class="absolute inset-0 bg-navy-950/65 backdrop-blur-sm" @click="closeMenu()" aria-hidden="true"></div>
-        <div id="mobile-site-drawer"
-             class="absolute right-0 top-0 flex h-full w-[min(22rem,calc(100vw-1.25rem))] flex-col overflow-hidden rounded-l-2xl border-l border-navy-100 bg-white shadow-2xl shadow-black/30 dark:border-white/10 dark:bg-navy-900"
-             x-transition:enter="transition ease-out duration-250" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
-            <div class="flex items-center justify-between gap-4 border-b border-navy-100 px-5 py-4 dark:border-white/10">
+    {{-- Teleport mencegah drawer fixed terikat ke tinggi header saat backdrop-filter aktif. --}}
+    <template x-teleport="body">
+        <div
+            x-show="open" x-cloak
+            @keydown.escape.window="closeMenu()"
+            @keyup.escape.window="closeMenu()"
+            role="dialog" aria-modal="true" aria-label="Menu navigasi"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="site-drawer-layer fixed inset-0 z-[80] xl:hidden">
+            <div class="absolute inset-0 bg-navy-950/65 backdrop-blur-sm" @click="closeMenu()" aria-hidden="true"></div>
+            <div id="mobile-site-drawer"
+                 class="site-drawer-panel absolute right-0 top-0 flex w-[min(22rem,calc(100vw-1.25rem))] flex-col overflow-hidden rounded-l-2xl border-l border-navy-100 bg-white shadow-2xl shadow-black/30 dark:border-white/10 dark:bg-navy-900"
+                 x-transition:enter="transition ease-out duration-250" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
+            <div class="site-drawer-header flex items-center justify-between gap-4 border-b border-navy-100 px-5 py-4 dark:border-white/10">
                 <a href="{{ $navBase }}#hero" class="flex min-w-0 items-center gap-3" @click="closeMenu()">
                     <img src="{{ config('company.logo_url') ?: asset('images/logo-zzk.webp') }}" alt="Logo PT Zam Zam Khan" width="400" height="263" decoding="async" class="h-11 w-auto flex-none">
                     <span class="min-w-0">
@@ -97,7 +98,7 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
                 </button>
             </div>
-            <ul class="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+            <ul class="site-drawer-nav min-h-0 flex-1 space-y-1 overflow-y-auto px-4 py-4">
                 @foreach ($nav as $item)
                     @php($id = ltrim($item['anchor'], '#'))
                     <li>
@@ -107,12 +108,13 @@
                     </li>
                 @endforeach
             </ul>
-            <div class="border-t border-navy-100 p-4 dark:border-white/10">
+            <div class="site-drawer-footer border-t border-navy-100 p-4 dark:border-white/10">
                 <a href="{{ route('admin.login') }}" @click="closeMenu()" class="btn-outline w-full !rounded-xl">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14M5 20a2 2 0 01-2-2V6a2 2 0 012-2h4"/></svg>
                     Login Admin
                 </a>
             </div>
+            </div>
         </div>
-    </div>
+    </template>
 </header>

@@ -16,8 +16,8 @@
         'icon' => 'M5 12h14M12 5v14',
     ])
 @else
-    <div class="admin-table-card overflow-x-auto">
-        <table class="w-full min-w-[680px] text-sm">
+    <div class="admin-table-card admin-table-card--responsive overflow-x-auto">
+        <table class="admin-responsive-table w-full min-w-[680px] text-sm">
             <thead>
                 <tr>
                     <th class="px-4 py-3 text-left">Urutan</th>
@@ -29,10 +29,10 @@
             <tbody>
                 @foreach ($items as $item)
                     <tr class="border-t">
-                        <td class="px-4 py-3 text-[var(--admin-muted)]">{{ $item->display_order }}</td>
-                        <td class="px-4 py-3 font-semibold text-[var(--admin-ink)]">{{ $item->{$titleField} }}</td>
-                        <td class="px-4 py-3 text-center">@include('admin.partials.status-badge', ['active' => $item->is_active])</td>
-                        <td class="px-4 py-3">@include('admin.partials.row-actions', [
+                        <td data-label="Urutan" class="px-4 py-3 text-[var(--admin-muted)]">{{ $item->display_order }}</td>
+                        <td data-label="Nama" class="px-4 py-3 font-semibold text-[var(--admin-ink)]">{{ $item->{$titleField} }}</td>
+                        <td data-label="Status" class="px-4 py-3 text-center">@include('admin.partials.status-badge', ['active' => $item->is_active])</td>
+                        <td data-label="Aksi" class="px-4 py-3">@include('admin.partials.row-actions', [
                             'edit' => route('admin.'.$routeName.'.edit', $item),
                             'delete' => route('admin.'.$routeName.'.destroy', $item),
                             'name' => $item->{$titleField},
@@ -44,4 +44,3 @@
     </div>
 @endif
 @endsection
-

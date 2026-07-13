@@ -19,8 +19,8 @@
         'icon' => 'M12 18h.01M9.1 9a3 3 0 1 1 5.8 1c0 2-2.9 2.2-2.9 4',
     ])
 @else
-    <div class="admin-table-card overflow-x-auto">
-        <table class="w-full min-w-[640px] text-sm">
+    <div class="admin-table-card admin-table-card--responsive overflow-x-auto">
+        <table class="admin-responsive-table w-full min-w-[640px] text-sm">
             <thead class="bg-navy-50 text-left text-xs uppercase tracking-wide text-navy-500">
                 <tr>
                     <th class="px-4 py-3">Urutan</th>
@@ -32,10 +32,10 @@
             <tbody class="divide-y divide-navy-100">
                 @foreach ($faqs as $faq)
                     <tr>
-                        <td class="px-4 py-3 text-navy-500">{{ $faq->display_order }}</td>
-                        <td class="px-4 py-3 font-medium text-navy-900">{{ $faq->question }}</td>
-                        <td class="px-4 py-3">@include('admin.partials.status-badge', ['active' => $faq->is_active])</td>
-                        <td class="px-4 py-3">@include('admin.partials.row-actions', ['edit' => route('admin.faqs.edit', $faq), 'delete' => route('admin.faqs.destroy', $faq), 'name' => $faq->question])</td>
+                        <td data-label="Urutan" class="px-4 py-3 text-navy-500">{{ $faq->display_order }}</td>
+                        <td data-label="Pertanyaan" class="px-4 py-3 font-medium text-navy-900">{{ $faq->question }}</td>
+                        <td data-label="Status" class="px-4 py-3">@include('admin.partials.status-badge', ['active' => $faq->is_active])</td>
+                        <td data-label="Aksi" class="px-4 py-3">@include('admin.partials.row-actions', ['edit' => route('admin.faqs.edit', $faq), 'delete' => route('admin.faqs.destroy', $faq), 'name' => $faq->question])</td>
                     </tr>
                 @endforeach
             </tbody>

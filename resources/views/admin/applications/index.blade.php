@@ -70,8 +70,8 @@
 @if ($applications->isEmpty())
     <div class="admin-empty-inline">Tidak ada pengajuan yang sesuai dengan filter.</div>
 @else
-    <div class="admin-table-card overflow-x-auto">
-        <table class="w-full min-w-[820px] text-sm">
+    <div class="admin-table-card admin-table-card--responsive overflow-x-auto">
+        <table class="admin-responsive-table w-full min-w-[820px] text-sm">
             <thead>
                 <tr>
                     <th class="px-4 py-3 text-left">Pemohon</th>
@@ -85,15 +85,15 @@
             <tbody>
                 @foreach ($applications as $item)
                     <tr class="border-t">
-                        <td class="px-4 py-3">
+                        <td data-label="Pemohon" class="px-4 py-3">
                             <strong class="block text-[var(--admin-ink)]">{{ $item->applicantName() }}</strong>
                             <span class="text-xs text-[var(--admin-muted)]">{{ $item->brand_name ?: 'Merek belum diisi' }}</span>
                         </td>
-                        <td class="px-4 py-3">{{ $item->applicantTypeLabel() }}</td>
-                        <td class="px-4 py-3">{{ $item->category?->name ?? '-' }}</td>
-                        <td class="px-4 py-3"><span class="admin-process-badge">{{ $item->process_status }}</span></td>
-                        <td class="px-4 py-3">{{ $item->submitted_at?->translatedFormat('d M Y') ?? '-' }}</td>
-                        <td class="px-4 py-3 text-right"><a class="btn-outline" href="{{ route('admin.applications.show', $item) }}">Detail</a></td>
+                        <td data-label="Jenis" class="px-4 py-3">{{ $item->applicantTypeLabel() }}</td>
+                        <td data-label="Kategori" class="px-4 py-3">{{ $item->category?->name ?? '-' }}</td>
+                        <td data-label="Status" class="px-4 py-3"><span class="admin-process-badge">{{ $item->process_status }}</span></td>
+                        <td data-label="Tanggal masuk" class="px-4 py-3">{{ $item->submitted_at?->translatedFormat('d M Y') ?? '-' }}</td>
+                        <td data-label="Aksi" class="px-4 py-3 text-right"><a class="btn-outline" href="{{ route('admin.applications.show', $item) }}">Detail</a></td>
                     </tr>
                 @endforeach
             </tbody>

@@ -52,6 +52,20 @@
         overflow-x: hidden;
         transition: background-color 0.4s ease, color 0.3s ease;
     }
+    img,
+    video,
+    canvas,
+    svg,
+    iframe {
+        max-width: 100%;
+    }
+    img,
+    video {
+        height: auto;
+    }
+    :where(p, li, dd, a, button, label) {
+        overflow-wrap: break-word;
+    }
     main {
         max-width: 100%;
         overflow-x: clip;
@@ -75,7 +89,7 @@
 }
 
 /* Tunda layout dan paint section homepage di bawah viewport tanpa mengubah kontennya. */
-.public-home main > section:not(#hero) {
+.public-home main > section:not(#hero):not(#layanan) {
     content-visibility: auto;
     contain-intrinsic-size: auto 900px;
 }
@@ -2689,6 +2703,34 @@ section[id] { scroll-margin-top: 100px; }
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
 }
+.site-drawer-layer {
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: contain;
+}
+.site-drawer-panel {
+    height: 100%;
+    min-height: 0;
+    overscroll-behavior: contain;
+}
+.site-drawer-header {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+.site-drawer-nav {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+.site-drawer-footer {
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+@media (max-width: 360px) {
+    .site-drawer-panel {
+        width: calc(100vw - 0.75rem);
+        border-radius: 1rem 0 0 1rem;
+    }
+}
 .floating-actions {
     max-width: calc(100vw - 2rem);
     padding-bottom: env(safe-area-inset-bottom);
@@ -4313,6 +4355,7 @@ body.whatsapp-lead-open .floating-actions,
     .admin-enter .mb-6.flex,
     .admin-enter .mb-6.flex-wrap {
         align-items: stretch;
+        flex-direction: column;
     }
     .admin-enter .mb-6.flex > a,
     .admin-enter .mb-6.flex > div:last-child,
@@ -4325,6 +4368,92 @@ body.whatsapp-lead-open .floating-actions,
     }
     .admin-delete-modal__actions > * {
         flex: 1 1 9rem;
+    }
+}
+@media (max-width: 820px) {
+    .admin-table-card--responsive {
+        overflow: visible !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    .admin-responsive-table,
+    .admin-responsive-table tbody,
+    .admin-responsive-table tr,
+    .admin-responsive-table td {
+        display: block;
+        width: 100%;
+        min-width: 0 !important;
+    }
+    .admin-responsive-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    .admin-responsive-table tbody {
+        display: grid;
+        gap: 0.85rem;
+    }
+    .admin-responsive-table tbody tr {
+        overflow: hidden;
+        border: 1px solid var(--admin-border) !important;
+        border-radius: 1rem;
+        background: var(--admin-surface);
+        padding: 0.35rem 0.85rem;
+        box-shadow: 0 16px 34px -30px rgb(16 16 16 / 0.46);
+    }
+    .admin-responsive-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(5.5rem, 0.72fr) minmax(0, 1.28fr);
+        align-items: center;
+        gap: 0.75rem;
+        border: 0 !important;
+        border-bottom: 1px solid var(--admin-border) !important;
+        padding: 0.7rem 0 !important;
+        text-align: left !important;
+        overflow-wrap: anywhere;
+    }
+    .admin-responsive-table tbody td:last-child {
+        border-bottom: 0 !important;
+    }
+    .admin-responsive-table tbody td::before {
+        content: attr(data-label);
+        align-self: start;
+        color: var(--admin-muted);
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        line-height: 1.4;
+        text-transform: uppercase;
+    }
+    .admin-responsive-table tbody td > * {
+        min-width: 0;
+    }
+    .admin-responsive-table .justify-end {
+        justify-content: flex-start;
+    }
+    .admin-responsive-table .admin-row-action,
+    .admin-responsive-table .btn-outline {
+        min-height: 2.5rem;
+    }
+    [data-admin-theme="dark"] .admin-responsive-table tbody tr {
+        background: var(--admin-surface);
+        box-shadow: 0 18px 38px -30px rgb(0 0 0 / 0.88);
+    }
+}
+@media (max-width: 640px) {
+    .admin-responsive-table tbody td:is(
+        [data-label="Artikel"],
+        [data-label="Judul"],
+        [data-label="Pertanyaan"],
+        [data-label="Pemohon"]
+    ) {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
     }
 }
 
@@ -5875,6 +6004,43 @@ body.whatsapp-lead-open .floating-actions,
     .login-card {
         border-radius: 1.15rem;
         padding: 1.5rem 1.15rem;
+    }
+}
+@media (max-height: 650px) {
+    .login-page {
+        align-items: flex-start;
+        padding-top: max(0.75rem, env(safe-area-inset-top));
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+    .login-layout {
+        margin-block: auto;
+    }
+    .login-card {
+        padding-top: 1.25rem;
+        padding-bottom: 1.2rem;
+    }
+    .login-heading h2 {
+        margin-top: 0.7rem;
+        font-size: 1.5rem;
+    }
+    .login-heading > p {
+        margin-top: 0.45rem;
+        line-height: 1.5;
+    }
+    .login-card form {
+        margin-top: 1rem;
+    }
+    .login-card form > * + * {
+        margin-block-start: 0.85rem !important;
+    }
+    .login-divider {
+        margin-top: 1rem;
+    }
+    .login-security-note {
+        margin-top: 0.65rem;
+    }
+    .login-back {
+        margin-top: 0.85rem;
     }
 }
 .login-eyebrow {

@@ -22,3 +22,12 @@ document.querySelector('#admin-login-form')?.addEventListener('submit', (event) 
         submitButton.disabled = true;
     }, 0);
 });
+
+// BFCache dapat mengembalikan halaman login setelah navigasi; pulihkan tombol agar tetap interaktif.
+window.addEventListener('pageshow', () => {
+    const submitButton = document.querySelector('#admin-login-form button[type="submit"]');
+    if (!submitButton) return;
+
+    submitButton.disabled = false;
+    submitButton.classList.remove('opacity-70', 'cursor-wait', 'pointer-events-none');
+});

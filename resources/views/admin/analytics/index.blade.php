@@ -107,12 +107,12 @@
 
 <details class="analytics-data-table admin-panel">
     <summary>Lihat data grafik dalam tabel</summary>
-    <div class="overflow-x-auto">
-        <table>
+    <div class="admin-table-card--responsive overflow-x-auto">
+        <table class="admin-responsive-table">
             <thead><tr><th>Waktu</th><th>Halaman dibuka</th><th>Sesi pengunjung</th></tr></thead>
             <tbody>
                 @foreach ($series['labels'] as $index => $label)
-                    <tr><td>{{ $label }}</td><td>{{ $series['pageViews'][$index] }}</td><td>{{ $series['uniqueVisitors'][$index] }}</td></tr>
+                    <tr><td data-label="Waktu">{{ $label }}</td><td data-label="Halaman dibuka">{{ $series['pageViews'][$index] }}</td><td data-label="Sesi pengunjung">{{ $series['uniqueVisitors'][$index] }}</td></tr>
                 @endforeach
             </tbody>
         </table>

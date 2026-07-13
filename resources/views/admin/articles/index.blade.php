@@ -28,8 +28,8 @@
         'icon' => 'M5 4h10l4 4v12H5V4Zm10 0v5h5M8 13h8M8 17h6',
     ])
 @else
-    <div class="admin-table-card overflow-x-auto">
-        <table class="w-full min-w-[720px] text-left text-sm">
+    <div class="admin-table-card admin-table-card--responsive overflow-x-auto">
+        <table class="admin-responsive-table w-full min-w-[720px] text-left text-sm">
             <thead>
                 <tr class="border-b border-navy-100 text-xs uppercase tracking-wide text-navy-400">
                     <th class="px-4 py-3 font-semibold">Artikel</th>
@@ -43,7 +43,7 @@
             <tbody class="divide-y divide-navy-100">
                 @foreach ($articles as $a)
                     <tr>
-                        <td class="px-4 py-3">
+                        <td data-label="Artikel" class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="h-12 w-20 flex-none overflow-hidden rounded-lg border border-navy-100 bg-navy-950">
                                     @if ($a->cover_image)
@@ -58,17 +58,17 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-navy-600">{{ $a->category?->name ?? '-' }}</td>
-                        <td class="px-4 py-3">
+                        <td data-label="Kategori" class="px-4 py-3 text-navy-600">{{ $a->category?->name ?? '-' }}</td>
+                        <td data-label="Status" class="px-4 py-3">
                             @if ($a->status === 'published')
                                 <span class="admin-status-badge admin-status-badge--active"><span></span>Terbit</span>
                             @else
                                 <span class="admin-status-badge admin-status-badge--inactive"><span></span>Draft</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-navy-600">{{ $a->published_at?->translatedFormat('d M Y') ?? '-' }}</td>
-                        <td class="px-4 py-3 text-navy-500">{{ $a->updated_at?->translatedFormat('d M Y') }}</td>
-                        <td class="px-4 py-3">
+                        <td data-label="Publikasi" class="px-4 py-3 text-navy-600">{{ $a->published_at?->translatedFormat('d M Y') ?? '-' }}</td>
+                        <td data-label="Diperbarui" class="px-4 py-3 text-navy-500">{{ $a->updated_at?->translatedFormat('d M Y') }}</td>
+                        <td data-label="Aksi" class="px-4 py-3">
                             @include('admin.partials.row-actions', ['edit' => route('admin.articles.edit', $a), 'delete' => route('admin.articles.destroy', $a), 'name' => $a->title])
                         </td>
                     </tr>
