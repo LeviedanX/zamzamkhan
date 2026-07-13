@@ -103,7 +103,6 @@ app/                    Logika aplikasi, controller, model, middleware, dan supp
 bootstrap/              Bootstrap Laravel dan cache placeholder
 config/                 Konfigurasi aplikasi dan fallback perusahaan
 database/               Migration, factory, dan seeder
-docs/                   Dokumentasi audit dan deployment
 public/                 Entry point serta asset publik
 resources/views/        Blade layout, halaman admin, dan partial homepage
 resources/css/          Styling aplikasi
@@ -116,7 +115,7 @@ tests/                  Feature test dan unit test
 
 ### Deployment
 
-Panduan deployment tersedia di [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Production minimal harus menggunakan:
+Sebelum deployment, siapkan environment production yang terpisah dari konfigurasi development. Production minimal harus menggunakan:
 
 ```dotenv
 APP_ENV=production
@@ -239,7 +238,7 @@ Tests use the SQLite in-memory database configured in `phpunit.xml`, so they do 
 
 ### Deployment
 
-See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the deployment guide. Production should at minimum use:
+Before deployment, prepare a production environment that is separate from the development configuration. Production should at minimum use:
 
 ```dotenv
 APP_ENV=production
