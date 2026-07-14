@@ -242,15 +242,24 @@
 /* ================= Hero background system (bg1.webp cityscape) ================= */
 .hero-bg { z-index: 0; }
 
-/* Layer 1 — cityscape bg1.png (background-image di-set inline via asset() di Blade,
-   supaya URL resolve ke origin Laravel, bukan origin Vite dev-server) */
+/* Layer 1 — cityscape bg1.webp. Path absolut agar resolve ke origin Laravel
+   (bukan origin Vite dev-server) tanpa perlu atribut style inline, yang akan
+   ditolak CSP karena style-src tidak lagi mengizinkan unsafe-inline. */
 .hero-bg-image {
     background-color: #0a0505;
+    background-image: url('/images/bg1.webp');
     background-size: cover;
     background-position: center 72%;
     background-repeat: no-repeat;
     will-change: transform;
 }
+
+/* Bayangan teks caption potret — sebelumnya atribut style inline di Blade. */
+.hero-portrait-role { text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75); }
+.hero-portrait-name { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85); }
+
+/* Placeholder cover artikel di panel admin — sebelumnya style inline. */
+.admin-article-cover-fallback { background: linear-gradient(135deg, #7f1d1d, #070707); }
 
 /* Layer 2 — overlay: gelap di kiri (teks terbaca), makin bening ke kanan (cityscape + foto tampak) */
 .hero-overlay {
@@ -2250,8 +2259,23 @@ section[id] { scroll-margin-top: 100px; }
     color: #fff;
 }
 
-/* Dots */
+/* Dots — the visible dot stays 8px, but the button itself pads out to a 24px
+   hit area so it is reachable on touch screens. */
 .testimonial-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    min-width: 24px;
+    padding: 0.5rem;
+    border: 0;
+    background: transparent;
+    border-radius: 9999px;
+    cursor: pointer;
+}
+.testimonial-dot::before {
+    content: '';
+    display: block;
     height: 0.5rem;
     width: 0.5rem;
     border-radius: 9999px;
@@ -2259,15 +2283,15 @@ section[id] { scroll-margin-top: 100px; }
     opacity: 0.55;
     transition: width 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
 }
-.testimonial-dot:hover { opacity: 0.85; }
-.testimonial-dot--active {
+.testimonial-dot:hover::before { opacity: 0.85; }
+.testimonial-dot--active::before {
     width: 1.4rem;
     opacity: 1;
     background: var(--color-emerald-brand);
 }
 .testimonial-dot:focus-visible { outline: 2px solid var(--color-emerald-brand); outline-offset: 2px; }
-:root.dark .testimonial-dot { background: rgba(255,255,255,0.35); }
-:root.dark .testimonial-dot--active { background: var(--color-tosca-400); }
+:root.dark .testimonial-dot::before { background: rgba(255,255,255,0.35); }
+:root.dark .testimonial-dot--active::before { background: var(--color-tosca-400); }
 
 /* ================= Visi & Misi: decorative background + framework ================= */
 /* --- Background decorative --- */

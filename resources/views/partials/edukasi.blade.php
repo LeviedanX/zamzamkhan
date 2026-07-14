@@ -6,8 +6,8 @@
 <section id="edukasi-halal" class="education-section section relative overflow-hidden border-t border-navy-100 bg-white dark:border-white/10 dark:bg-navy-950">
     {{-- Background decorative subtle --}}
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div class="vm-glow-pulse absolute -top-24 right-1/4 h-72 w-72 rounded-full bg-emerald-brand/[0.06] blur-3xl dark:bg-emerald-brand/20"></div>
-        <div class="vm-glow-pulse absolute -bottom-24 left-0 h-72 w-72 rounded-full bg-tosca-400/[0.05] blur-3xl dark:bg-tosca-400/10"></div>
+        <div class="vm-glow-pulse absolute -top-24 right-1/4 h-72 w-72 rounded-full bg-emerald-brand/6 blur-3xl dark:bg-emerald-brand/20"></div>
+        <div class="vm-glow-pulse absolute -bottom-24 left-0 h-72 w-72 rounded-full bg-tosca-400/5 blur-3xl dark:bg-tosca-400/10"></div>
         <div class="hero-grid absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"></div>
     </div>
 

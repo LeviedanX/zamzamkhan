@@ -8,8 +8,8 @@
          class="testimonial-section section relative overflow-hidden border-t border-navy-100 bg-navy-50 dark:border-white/5 dark:bg-[#0c0708]">
     {{-- Aksen background halus + pemisah visual dari section Tentang --}}
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div class="absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-emerald-brand/[0.06] blur-3xl dark:bg-emerald-brand/15"></div>
-        <div class="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-tosca-400/[0.05] blur-3xl dark:bg-tosca-400/10"></div>
+        <div class="absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-emerald-brand/6 blur-3xl dark:bg-emerald-brand/15"></div>
+        <div class="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-tosca-400/5 blur-3xl dark:bg-tosca-400/10"></div>
         <div class="absolute inset-0 hero-grid opacity-[0.04] dark:opacity-[0.06]"></div>
     </div>
 
@@ -34,7 +34,7 @@
                  role="list" aria-label="Dokumentasi pendampingan PT Zam Zam Khan">
                 @foreach ($testi as $t)
                     <article class="testimonial-card group" role="listitem">
-                        <div class="relative aspect-[4/3] overflow-hidden bg-navy-100 dark:bg-navy-800">
+                        <div class="relative aspect-4/3 overflow-hidden bg-navy-100 dark:bg-navy-800">
                             <img src="{{ $t['image_url'] }}"
                                  alt="{{ filled($t['alt'] ?? null) ? $t['alt'] : 'Dokumentasi '.$t['service'].' — '.$t['title'] }}"
                                  loading="lazy" decoding="async"
@@ -73,7 +73,10 @@
 
             <div class="testimonial-progress h-1 w-40 flex-none overflow-hidden rounded-full bg-navy-200 sm:w-52 dark:bg-white/10">
                 <div class="h-full rounded-full bg-emerald-brand transition-[width] duration-500 ease-out"
-                     :style="`width: ${((index + 1) / stops) * 100}%`"></div>
+                     {{-- Bentuk objek, bukan string: Alpine menulis string lewat
+                          setAttribute('style') yang ditolak CSP; objek dipasang
+                          lewat setProperty sehingga aman. --}}
+                     :style="{ width: `${((index + 1) / stops) * 100}%` }"></div>
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-1.5">

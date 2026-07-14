@@ -20,8 +20,13 @@ use App\Http\Controllers\Admin\StatisticController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\VisitorAnalyticsController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Middleware\EnsureDesktopAdminAccess;
 use App\Http\Middleware\EnsureAdminIsActive;
 use App\Models\Article;
+use App\Models\HeroSection;
+use App\Models\Service;
+use App\Models\SiteSetting;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('home'))->name('home');
@@ -33,11 +38,29 @@ Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel
 // SEO: sitemap & robots (dinamis agar URL sesuai environment)
 Route::get('/sitemap.xml', function () {
     $home = url('/');
-    $lastmod = now()->toAtomString();
+
+    // lastmod harus mencerminkan perubahan konten sungguhan. Memakai now() akan
+    // memberi tahu crawler bahwa setiap halaman berubah setiap kali sitemap
+    // diambil, dan sinyal itu akan diabaikan karena terbukti tidak akurat.
+    $toAtom = fn ($value) => $value
+        ? Carbon::parse($value)->toAtomString()
+        : now()->toAtomString();
+
+    $articlesLastmod = Article::published()->max('updated_at');
+    $homeLastmod = collect([
+        SiteSetting::max('updated_at'),
+        HeroSection::max('updated_at'),
+        Service::max('updated_at'),
+        $articlesLastmod,
+    ])->filter()->max();
+
+    $lastmod = $toAtom($homeLastmod);
+    $indexLastmod = $toAtom($articlesLastmod);
+
     $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
         .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n"
         ."  <url>\n    <loc>{$home}</loc>\n    <lastmod>{$lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n"
-        ."  <url>\n    <loc>".route('artikel.index')."</loc>\n    <lastmod>{$lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n";
+        ."  <url>\n    <loc>".route('artikel.index')."</loc>\n    <lastmod>{$indexLastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n";
 
     foreach (Article::published()->latestPublished()->get(['slug', 'updated_at']) as $article) {
         $loc = route('artikel.show', $article->slug);
@@ -59,7 +82,7 @@ Route::get('/robots.txt', function () {
 // ---------------------------------------------------------------------------
 // Admin
 // ---------------------------------------------------------------------------
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(EnsureDesktopAdminAccess::class)->group(function () {
     Route::middleware('guest:admin')->group(function () {
         Route::get('login', [AuthController::class, 'showLogin'])->name('login');
         Route::post('login', [AuthController::class, 'login'])->name('login.attempt');

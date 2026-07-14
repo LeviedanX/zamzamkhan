@@ -17,6 +17,12 @@ class SecurityHeaders
 
         $response = $next($request);
 
+        // PHP dan Symfony sama-sama bisa mengiklankan versi runtime; keduanya dicabut.
+        $response->headers->remove('X-Powered-By');
+        if (function_exists('header_remove')) {
+            header_remove('X-Powered-By');
+        }
+
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -36,8 +42,13 @@ class SecurityHeaders
                 "object-src 'none'",
                 "frame-ancestors 'none'",
                 "form-action 'self'",
+                // 'unsafe-eval' masih diperlukan Alpine.js: ekspresi seperti
+                // x-data / :class dievaluasi lewat new Function(). Menghapusnya
+                // menuntut migrasi ke build @alpinejs/csp dan penulisan ulang
+                // ~129 ekspresi inline di seluruh Blade. Tidak ada 'unsafe-inline'
+                // di script-src, jadi skrip yang disuntikkan tetap tertolak.
                 "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'",
-                "style-src 'self' 'unsafe-inline'",
+                "style-src 'self' 'nonce-{$nonce}'",
                 "img-src 'self' data: blob: https:",
                 "font-src 'self' data:",
                 "connect-src 'self'",
@@ -47,7 +58,7 @@ class SecurityHeaders
                 "manifest-src 'self'",
             ];
 
-            if (app()->environment('production')) {
+            if (app()->environment('production') && $request->isSecure()) {
                 $directives[] = 'upgrade-insecure-requests';
             }
 

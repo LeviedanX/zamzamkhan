@@ -108,12 +108,9 @@
                     </li>
                 @endforeach
             </ul>
-            <div class="site-drawer-footer border-t border-navy-100 p-4 dark:border-white/10">
-                <a href="{{ route('admin.login') }}" @click="closeMenu()" class="btn-outline w-full !rounded-xl">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14M5 20a2 2 0 01-2-2V6a2 2 0 012-2h4"/></svg>
-                    Login Admin
-                </a>
-            </div>
+            {{-- Tautan admin sengaja tidak ditaruh di drawer mobile: EnsureDesktopAdminAccess
+                 memblokir akses panel admin dari perangkat mobile di level server (403),
+                 jadi tautan di sini hanya akan jadi dead-end bagi pengunjung mobile. --}}
             </div>
         </div>
     </template>

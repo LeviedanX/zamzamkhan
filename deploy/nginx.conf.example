@@ -1,0 +1,189 @@
+# =============================================================================
+# Konfigurasi Nginx — PT Zam Zam Khan
+#
+# STATUS: berkas ini BELUM PERNAH DIJALANKAN. Ia ditulis dan ditinjau manual,
+# tetapi tidak ada nginx di mesin pengembangan, sehingga `nginx -t` belum pernah
+# menguji sintaksnya. Perlakukan sebagai draf matang, bukan sesuatu yang terbukti.
+# Langkah 5 di bawah adalah pemeriksaan sungguhannya — jangan dilewati.
+#
+# Cara pakai di VPS:
+#   1. Ganti SEMUA "domain-resmi.com" dengan domain asli Anda.
+#   2. Sesuaikan `root` dan versi PHP-FPM (cek: ls /var/run/php/).
+#   3. Cek versi nginx (`nginx -v`) — lihat catatan `http2 on;` di Blok 4.
+#   4. Terbitkan sertifikat:  sudo certbot --nginx -d domain-resmi.com -d www.domain-resmi.com
+#   5. WAJIB uji dulu:        sudo nginx -t
+#   6. Baru muat ulang:       sudo systemctl reload nginx
+#
+# Ini melengkapi proteksi Laravel, bukan menggantikannya. trustHosts() di
+# bootstrap/app.php tetap menolak Host palsu yang lolos sampai ke PHP.
+# =============================================================================
+
+# --- Blok 1: tolak semua permintaan dengan Host yang tidak dikenal ------------
+# Tanpa ini, Nginx melayani server block pertama untuk Host apa pun, sehingga
+# penyerang bisa mengirim "Host: attacker.example" dan meracuni cache/URL.
+# 444 = putus koneksi tanpa balasan.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+
+    server_name _;
+
+    ssl_certificate     /etc/letsencrypt/live/domain-resmi.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/domain-resmi.com/privkey.pem;
+
+    return 444;
+}
+
+# --- Blok 2: HTTP -> HTTPS (redirect permanen) -------------------------------
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name domain-resmi.com www.domain-resmi.com;
+
+    # Biarkan Certbot memperbarui sertifikat tanpa terkena redirect.
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://domain-resmi.com$request_uri;
+    }
+}
+
+# --- Blok 3: www -> non-www (satu URL kanonik saja) --------------------------
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+
+    server_name www.domain-resmi.com;
+
+    ssl_certificate     /etc/letsencrypt/live/domain-resmi.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/domain-resmi.com/privkey.pem;
+
+    return 301 https://domain-resmi.com$request_uri;
+}
+
+# --- Blok 4: situs utama -----------------------------------------------------
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    # `http2 on;` hanya ada di nginx >= 1.25.1. Ubuntu 22.04 masih mengirim
+    # nginx 1.18, dan di sana direktif ini membuat `nginx -t` GAGAL.
+    # Cek dulu: nginx -v
+    #   - nginx >= 1.25.1 : pakai baris di bawah ini
+    #   - nginx <  1.25.1 : hapus baris ini, ganti listen di atas menjadi
+    #                       `listen 443 ssl http2;`
+    http2 on;
+
+    server_name domain-resmi.com;
+    root /var/www/zzk-web/public;
+    index index.php;
+
+    charset utf-8;
+    server_tokens off;          # jangan iklankan versi nginx di header Server
+    client_max_body_size 12M;   # cukup untuk upload logo/gambar dari panel admin
+
+    ssl_certificate     /etc/letsencrypt/live/domain-resmi.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/domain-resmi.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # OCSP stapling butuh resolver; tanpa ini nginx diam-diam mengabaikannya.
+    ssl_stapling        on;
+    ssl_stapling_verify on;
+    resolver            1.1.1.1 8.8.8.8 valid=300s;
+    resolver_timeout    5s;
+
+    # -------------------------------------------------------------------------
+    # Kompresi — ini hambatan performa terbesar yang tersisa. Lighthouse lokal
+    # melaporkan 458 KB / 2.400 ms terbuang karena php artisan serve tidak bisa
+    # mengompresi. Begitu blok ini aktif, temuan itu hilang.
+    # -------------------------------------------------------------------------
+    gzip              on;
+    gzip_vary         on;
+    gzip_comp_level   6;
+    gzip_min_length   256;
+    gzip_proxied      any;
+    gzip_types
+        text/plain text/css text/xml text/javascript
+        application/javascript application/json application/xml
+        application/rss+xml application/atom+xml
+        image/svg+xml font/ttf font/otf;
+
+    # Aktifkan bila modul brotli terpasang (lebih kecil ~15-20% dari gzip).
+    # brotli            on;
+    # brotli_comp_level 5;
+    # brotli_types      text/plain text/css application/javascript application/json image/svg+xml;
+
+    # -------------------------------------------------------------------------
+    # Aset ber-hash dari Vite tidak pernah berubah isinya — cache selamanya.
+    # -------------------------------------------------------------------------
+    # `^~` wajib: tanpa itu, location regex gambar di bawah menang atas prefix
+    # ini, dan aset Vite ber-hash cuma dapat cache 30 hari, bukan immutable.
+    location ^~ /build/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+        try_files $uri =404;
+    }
+
+    location ~* \.(?:png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$ {
+        expires 30d;
+        add_header Cache-Control "public";
+        access_log off;
+        try_files $uri =404;
+    }
+
+    # -------------------------------------------------------------------------
+    # Jangan pernah sajikan berkas sensitif atau skrip dari folder upload.
+    # -------------------------------------------------------------------------
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    location ~* /storage/.*\.(?:php|phtml|phar|cgi|pl|py|sh)$ {
+        deny all;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT   $realpath_root;
+
+        # HTTPS diteruskan ke PHP supaya Laravel membangun URL https dan
+        # cookie Secure dengan benar.
+        fastcgi_param HTTPS on;
+
+        fastcgi_hide_header X-Powered-By;
+        fastcgi_read_timeout 60s;
+
+        internal;
+    }
+
+    # Blokir eksekusi PHP di luar index.php (mis. skrip yang ter-upload).
+    location ~ \.php$ {
+        return 404;
+    }
+
+    error_page 404 /index.php;
+
+    access_log /var/log/nginx/zzk-web.access.log;
+    error_log  /var/log/nginx/zzk-web.error.log;
+}

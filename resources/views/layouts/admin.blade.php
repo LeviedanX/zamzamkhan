@@ -17,7 +17,7 @@
             } catch (e) {}
         })();
     </script>
-    <style>
+    <style @if (! empty($cspNonce)) nonce="{{ $cspNonce }}" @endif>
         /* Background kritis mencegah flash putih sebelum stylesheet utama siap. */
         :root {
             background-color: #f7f1f1;

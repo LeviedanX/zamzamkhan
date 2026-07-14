@@ -29,7 +29,7 @@
     <meta name="description" content="@yield('description', $seoDesc)">
     <meta name="keywords" content="{{ $seoKeywords }}">
     <link rel="canonical" href="@yield('canonical', $seoCanonical)">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="@yield('ogType', 'website')">

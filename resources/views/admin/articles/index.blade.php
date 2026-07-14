@@ -49,7 +49,7 @@
                                     @if ($a->cover_image)
                                         <img src="{{ asset('storage/'.$a->cover_image) }}" alt="{{ $a->cover_alt ?: $a->title }}" class="h-full w-full object-cover">
                                     @else
-                                        <div class="flex h-full w-full items-center justify-center text-[10px] font-bold tracking-widest text-white/70" style="background:linear-gradient(135deg,#7f1d1d,#070707)">ZZK</div>
+                                        <div class="admin-article-cover-fallback flex h-full w-full items-center justify-center text-[10px] font-bold tracking-widest text-white/70">ZZK</div>
                                     @endif
                                 </div>
                                 <div class="min-w-0">

@@ -46,7 +46,7 @@ class ContentSeeder extends Seeder
             // sekaligus memunculkan opsi "Hapus gambar latar" untuk file hantu di admin.
             'image_path' => null,
             'badge_text' => 'Konsultan Bisnis & Legal — Kota Malang',
-            'trust_text' => 'Dipercaya 100++ pelaku usaha dan badan usaha.',
+            'trust_text' => 'Dipercaya 500++ pelaku usaha dan badan usaha.',
             'service_chips' => "Sertifikasi Halal\nLegalitas Usaha\nBPOM & HAKI\nLogo & Label Kemasan",
             'portrait_path' => 'images/buzamzami.png',
             'portrait_alt' => 'Direktur PT Zam Zam Khan, Dra. Atfiah El Zam Zami, MM.',

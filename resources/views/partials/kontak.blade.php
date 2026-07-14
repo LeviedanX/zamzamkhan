@@ -216,8 +216,7 @@
                 <iframe
                     src="{{ config('company.maps_embed') }}"
                     title="Peta lokasi PT Zam Zam Khan, Jl. MT Haryono Gang 6B No.949, Dinoyo, Lowokwaru, Kota Malang"
-                    class="block h-[280px] w-full sm:h-[360px] lg:h-[420px]"
-                    style="border:0"
+                    class="block h-[280px] w-full border-0 sm:h-[360px] lg:h-[420px]"
                     loading="lazy"
                     allowfullscreen
                     referrerpolicy="no-referrer-when-downgrade"></iframe>

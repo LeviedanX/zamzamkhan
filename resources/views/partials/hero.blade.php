@@ -20,11 +20,12 @@
              Sumber gambar via asset() â†’ URL origin Laravel (bukan Vite),
              agar bg tetap tampil saat mode dev (Vite serve) maupun produksi. --}}
         <div class="hero-bg-image absolute inset-0"
-             style="background-image: url('{{ asset('images/bg1.webp') }}');"
              :style="{ transform: `scale(1.08) translateY(${y * 0.05}px)` }"></div>
         @if (! empty($hero['image_url']))
+            {{-- URL berasal dari database, jadi tidak bisa ditaruh di stylesheet statis.
+                 Dipasang lewat data-bg + CSSOM agar CSP tidak butuh style-src unsafe-inline. --}}
             <div class="absolute inset-0 bg-cover bg-center opacity-55 mix-blend-screen"
-                 style="background-image: url('{{ $hero['image_url'] }}');"
+                 data-bg="{{ $hero['image_url'] }}"
                  :style="{ transform: `scale(1.06) translateY(${y * 0.035}px)` }"></div>
             <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,4,4,0.96)_0%,rgba(20,6,8,0.9)_38%,rgba(42,10,12,0.76)_66%,rgba(8,5,7,0.88)_100%)]"></div>
             <div class="absolute inset-0 bg-[radial-gradient(55%_50%_at_72%_36%,rgba(153,27,27,0.42),transparent_72%)]"></div>
@@ -64,7 +65,7 @@
                 <span class="hero-trust-badge inline-flex h-6 w-6 items-center justify-center rounded-full bg-tosca-400/15 text-tosca-400 ring-1 ring-tosca-400/30">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </span>
-                {{ $hero['trust_text'] ?? 'Dipercaya 100++ pelaku usaha dan badan usaha.' }}
+                {{ $hero['trust_text'] ?? 'Dipercaya 500++ pelaku usaha dan badan usaha.' }}
             </div>
 
             @if (! empty(config('company.services')))
@@ -104,8 +105,8 @@
                 {{-- Caption: title/nama Direktur, menempel di bawah figur --}}
                 <div class="hero-portrait-caption pointer-events-none absolute inset-x-0 bottom-3 z-2 px-3 text-center">
                     <span class="mx-auto mb-2 block h-0.5 w-9 rounded-full bg-linear-to-r from-transparent via-tosca-400 to-transparent"></span>
-                    <p class="hero-portrait-role font-display text-base font-bold uppercase tracking-[0.14em] text-white sm:text-lg" style="text-shadow:0 2px 12px rgba(0,0,0,.75)">{{ $hero['portrait_role'] ?? 'Direktur' }}</p>
-                    <p class="hero-portrait-name mt-1 text-xs font-medium text-white/85 sm:text-[13px]" style="text-shadow:0 1px 8px rgba(0,0,0,.85)">{{ $hero['portrait_name'] ?? 'Dra. Atfiah El Zam Zami, MM.' }}</p>
+                    <p class="hero-portrait-role font-display text-base font-bold uppercase tracking-[0.14em] text-white sm:text-lg">{{ $hero['portrait_role'] ?? 'Direktur' }}</p>
+                    <p class="hero-portrait-name mt-1 text-xs font-medium text-white/85 sm:text-[13px]">{{ $hero['portrait_name'] ?? 'Dra. Atfiah El Zam Zami, MM.' }}</p>
                 </div>
             </div>
         </div>

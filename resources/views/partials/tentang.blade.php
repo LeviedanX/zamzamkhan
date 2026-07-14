@@ -71,7 +71,7 @@
             {{-- mini stats --}}
             <div class="about-stats mt-8 grid grid-cols-3 gap-3">
                 <div class="rounded-2xl border border-navy-100 bg-navy-50/60 p-4 dark:border-white/10 dark:bg-white/5">
-                    <p class="font-display text-2xl font-extrabold text-navy-900 dark:text-white"><span data-count="100" data-suffix="++">100++</span></p>
+                    <p class="font-display text-2xl font-extrabold text-navy-900 dark:text-white"><span data-count="500" data-suffix="++">500++</span></p>
                     <p class="mt-1 text-xs font-semibold text-navy-700 dark:text-navy-200">Pelaku Usaha</p>
                     <p class="text-[11px] leading-tight text-navy-500 dark:text-navy-400">telah didampingi</p>
                 </div>

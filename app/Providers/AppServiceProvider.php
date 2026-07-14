@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,8 +30,29 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 
+    /**
+     * Paksa seluruh URL yang dihasilkan memakai skema HTTPS di produksi.
+     *
+     * Sengaja dikunci ke APP_URL yang berskema https, bukan sekadar
+     * environment('production'): tanpa itu, environment production yang masih
+     * memakai APP_URL http (mis. saat uji coba lokal) akan menghasilkan URL
+     * https yang tidak bisa dijangkau. Redirect http→https itu sendiri tetap
+     * ditangani web server, karena request http idealnya tidak sampai ke PHP.
+     */
+    private function enforceHttps(): void
+    {
+        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME);
+
+        if ($this->app->environment('production') && $scheme === 'https') {
+            URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', 'on');
+        }
+    }
+
     public function boot(): void
     {
+        $this->enforceHttps();
+
         // Selalu daftarkan: simpan/hapus konten di admin → bersihkan cache (perubahan langsung tampil).
         $this->registerCacheFlush();
 

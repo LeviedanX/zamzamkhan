@@ -33,7 +33,10 @@ class VisitorAnalyticsAndAdminAccountTest extends TestCase
         $this->assertSame(64, strlen($visit->visitor_key));
         $this->assertArrayNotHasKey('ip_address', $visit->getAttributes());
 
-        $this->actingAs($this->admin(), 'admin')->get(route('admin.dashboard'))->assertOk();
+        $this->actingAs($this->admin(), 'admin')
+            ->withHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/150.0 Safari/537.36')
+            ->get(route('admin.dashboard'))
+            ->assertOk();
         $this->assertSame(1, WebVisit::count());
     }
 

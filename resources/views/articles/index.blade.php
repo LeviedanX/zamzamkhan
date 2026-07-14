@@ -1,9 +1,39 @@
 @extends('layouts.app')
 
-@section('title', 'Artikel & Insight Bisnis — Konsultan Halal & Legalitas Usaha Malang | PT Zam Zam Khan')
-@section('description', 'Kumpulan artikel dan insight seputar sertifikasi halal, legalitas usaha, NIB, BPOM, HAKI, perpajakan, dan branding untuk pelaku usaha di Malang bersama PT Zam Zam Khan.')
-@section('canonical', route('artikel.index'))
-@section('ogUrl', route('artikel.index'))
+@php
+    $currentPage = $articles->currentPage();
+
+    // Canonical menunjuk ke dirinya sendiri, lengkap dengan kategori & halaman,
+    // supaya halaman 2 dst. tidak dianggap duplikat halaman 1.
+    $canonicalQuery = array_filter([
+        'kategori' => $activeCategory?->slug,
+        'q' => $q !== '' ? $q : null,
+        'page' => $currentPage > 1 ? $currentPage : null,
+    ]);
+    $canonicalUrl = route('artikel.index').($canonicalQuery ? '?'.http_build_query($canonicalQuery) : '');
+
+    $pageTitle = 'Artikel & Insight Bisnis — Konsultan Halal & Legalitas Usaha Malang | PT Zam Zam Khan';
+    $pageDesc = 'Kumpulan artikel dan insight seputar sertifikasi halal, legalitas usaha, NIB, BPOM, HAKI, perpajakan, dan branding untuk pelaku usaha di Malang bersama PT Zam Zam Khan.';
+
+    if ($activeCategory) {
+        $pageTitle = $activeCategory->name.' — Artikel & Insight | PT Zam Zam Khan';
+    }
+    if ($currentPage > 1) {
+        $pageTitle = 'Halaman '.$currentPage.' — '.$pageTitle;
+    }
+
+    // Hasil pencarian bersifat tipis dan tak terbatas jumlahnya; jangan diindeks,
+    // tapi tetap biarkan crawler mengikuti tautan artikelnya.
+    $pageRobots = $q !== '' ? 'noindex, follow' : 'index, follow';
+@endphp
+
+@section('title', $pageTitle)
+@section('description', $pageDesc)
+@section('robots', $pageRobots)
+@section('canonical', $canonicalUrl)
+@section('ogUrl', $canonicalUrl)
+@section('ogTitle', $pageTitle)
+@section('ogDescription', $pageDesc)
 
 @section('content')
     {{-- Page header (lebih ringkas dari hero utama) --}}
@@ -39,7 +69,7 @@
                 @if ($activeCategory)
                     <input type="hidden" name="kategori" value="{{ $activeCategory->slug }}">
                 @endif
-                <button type="submit" class="btn-primary !px-5 !py-3">Cari</button>
+                <button type="submit" class="btn-primary px-5! py-3!">Cari</button>
             </form>
         </div>
     </header>
@@ -47,16 +77,16 @@
     <section class="section bg-white pt-12 dark:bg-navy-950 md:pt-14">
         <div class="container-x">
             {{-- Filter chip kategori --}}
-            <div class="article-filter" role="list" aria-label="Filter kategori artikel">
-                <a role="listitem" href="{{ route('artikel.index', array_filter(['q' => $q])) }}"
+            <nav class="article-filter" aria-label="Filter kategori artikel">
+                <a href="{{ route('artikel.index', array_filter(['q' => $q])) }}"
                    @class(['article-chip-filter', 'article-chip-filter--active' => ! $activeCategory])
                    @if(! $activeCategory) aria-current="true" @endif>Semua</a>
                 @foreach ($categories as $cat)
-                    <a role="listitem" href="{{ route('artikel.index', array_filter(['kategori' => $cat->slug, 'q' => $q])) }}"
+                    <a href="{{ route('artikel.index', array_filter(['kategori' => $cat->slug, 'q' => $q])) }}"
                        @class(['article-chip-filter', 'article-chip-filter--active' => $activeCategory && $activeCategory->id === $cat->id])
                        @if($activeCategory && $activeCategory->id === $cat->id) aria-current="true" @endif>{{ $cat->name }}</a>
                 @endforeach
-            </div>
+            </nav>
 
             @if ($articles->isEmpty())
                 {{-- Empty state --}}

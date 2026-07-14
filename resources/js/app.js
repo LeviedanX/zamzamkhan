@@ -1,8 +1,5 @@
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse';
-import { Chart, registerables } from 'chart.js';
-
-Chart.register(...registerables);
 
 Alpine.plugin(collapse);
 
@@ -560,13 +557,26 @@ window.Alpine = Alpine;
 Alpine.start();
 
 let analyticsCharts = [];
+let chartLib = null;
 
 const destroyAnalyticsCharts = () => {
     analyticsCharts.forEach((chart) => chart.destroy());
     analyticsCharts = [];
 };
 
-const initVisitorAnalytics = () => {
+// Chart.js weighs ~200 KB and only the admin analytics page draws anything, so
+// it is fetched on demand rather than shipped to every visitor of the homepage.
+const loadChart = async () => {
+    if (!chartLib) {
+        const { Chart, registerables } = await import('chart.js');
+        Chart.register(...registerables);
+        chartLib = Chart;
+    }
+
+    return chartLib;
+};
+
+const initVisitorAnalytics = async () => {
     const dataNode = document.querySelector('#visitor-analytics-data');
     const trendCanvas = document.querySelector('#visitor-trend-chart');
     const deviceCanvas = document.querySelector('#visitor-device-chart');
@@ -580,6 +590,11 @@ const initVisitorAnalytics = () => {
     } catch (error) {
         return;
     }
+
+    const Chart = await loadChart();
+
+    // An admin partial navigation can swap the page out while the chunk loads.
+    if (!trendCanvas.isConnected || !deviceCanvas.isConnected) return;
 
     const dark = document.body.dataset.adminTheme === 'dark';
     const textColor = dark ? 'rgba(255,255,255,.72)' : '#62585a';
@@ -667,10 +682,30 @@ const initVisitorAnalytics = () => {
     });
 };
 
-initVisitorAnalytics();
+initVisitorAnalytics().catch(() => {});
+
+// Gaya yang nilainya berasal dari server (URL gambar hero, delay animasi FAQ)
+// dipasang lewat CSSOM, bukan atribut style di HTML: CSP style-src kita tidak
+// mengizinkan unsafe-inline, sedangkan penulisan via el.style tidak diblokir.
+const applyDynamicStyles = (root = document) => {
+    root.querySelectorAll('[data-bg]').forEach((el) => {
+        // Buang kutip dan backslash supaya nilai dari database tidak bisa keluar
+        // dari url("...") dan menyuntikkan deklarasi CSS lain.
+        const url = (el.dataset.bg || '').replace(/["'\\]/g, '');
+        if (url) el.style.setProperty('background-image', `url("${url}")`);
+    });
+
+    root.querySelectorAll('[data-delay]').forEach((el) => {
+        el.style.setProperty('--d', `${parseInt(el.dataset.delay, 10) || 0}ms`);
+    });
+};
+
+applyDynamicStyles();
 
 // Reveal-on-scroll (ringan, IntersectionObserver)
 document.addEventListener('DOMContentLoaded', () => {
+    applyDynamicStyles();
+
     const els = document.querySelectorAll('.reveal');
     if (!('IntersectionObserver' in window) || els.length === 0) {
         els.forEach((el) => el.classList.add('is-visible'));
@@ -945,7 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (push) history.pushState({ adminNavigation: true }, '', url);
             window.scrollTo({ top: 0, behavior: 'auto' });
             clearNavigating();
-            initVisitorAnalytics();
+            initVisitorAnalytics().catch(() => {});
         };
 
         if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

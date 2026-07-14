@@ -28,7 +28,7 @@
             <div class="faq-card">
                 @foreach (config('company.faq') as $i => $item)
                     <div class="faq-item" :class="active === {{ $i }} ? 'faq-item--active' : ''"
-                         style="--d: {{ $i * 70 }}ms">
+                         data-delay="{{ $i * 70 }}">
                         <h3>
                             <button type="button" @click="active === {{ $i }} ? active = null : active = {{ $i }}"
                                     class="faq-q" :aria-expanded="active === {{ $i }} ? 'true' : 'false'"
