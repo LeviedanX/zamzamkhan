@@ -4,31 +4,33 @@
     $trust = ! empty($hero['service_chips'])
         ? $hero['service_chips']
         : ['Sertifikasi Halal', 'Legalitas Usaha', 'BPOM & HAKI', 'Logo & Label Kemasan'];
-    $defaultPortraitPath = public_path('images/buzamzami.png');
-    $defaultPortraitUrl = asset('images/buzamzami.png').'?v='.(is_file($defaultPortraitPath) ? filemtime($defaultPortraitPath) : '1');
+    $defaultPortraitPath = public_path('images/buzamzami.webp');
+    $defaultPortraitUrl = asset('images/buzamzami.webp').'?v='.(is_file($defaultPortraitPath) ? filemtime($defaultPortraitPath) : '1');
     $configuredPortraitUrl = $hero['portrait_url'] ?? null;
     $configuredPortraitPath = $configuredPortraitUrl ? parse_url($configuredPortraitUrl, PHP_URL_PATH) : null;
-    $portraitUrl = ! $configuredPortraitPath || str_ends_with($configuredPortraitPath, '/images/buzamzami.png')
+    $portraitUsesDefault = ! $configuredPortraitPath
+        || str_ends_with($configuredPortraitPath, '/images/buzamzami.png')
+        || str_ends_with($configuredPortraitPath, '/images/buzamzami.webp');
+    $portraitUrl = $portraitUsesDefault
         ? $defaultPortraitUrl
         : $configuredPortraitUrl;
+    $defaultBackgroundPath = public_path('images/bg1-hq.webp');
+    $defaultBackgroundUrl = asset('images/bg1-hq.webp').'?v='.(is_file($defaultBackgroundPath) ? filemtime($defaultBackgroundPath) : '1');
+    $configuredBackgroundUrl = $hero['image_url'] ?? null;
+    $backgroundUrl = $configuredBackgroundUrl ?: $defaultBackgroundUrl;
 @endphp
-<section id="hero" x-data="{ y: 0 }" @scroll.window.passive="y = window.scrollY"
+<section id="hero" x-data="heroParallax" @scroll.window.passive="updateParallax"
          class="noise relative overflow-hidden bg-navy-950 text-white">
-    {{-- ============ Background cityscape (bg1.webp) â€” layering rapi ============ --}}
+    {{-- ============ Background cityscape â€” layering rapi ============ --}}
     <div class="hero-bg pointer-events-none absolute inset-0" aria-hidden="true">
-        {{-- 1. Cityscape bg1.webp (parallax halus).
-             Sumber gambar via asset() â†’ URL origin Laravel (bukan Vite),
-             agar bg tetap tampil saat mode dev (Vite serve) maupun produksi. --}}
+        {{-- Gambar CMS menggantikan fallback WebP agar browser tidak mengunduh dua
+             background sekaligus. URL tetap dipasang via CSSOM agar aman untuk CSP. --}}
         <div class="hero-bg-image absolute inset-0"
-             :style="{ transform: `scale(1.08) translateY(${y * 0.05}px)` }"></div>
-        @if (! empty($hero['image_url']))
-            {{-- URL berasal dari database, jadi tidak bisa ditaruh di stylesheet statis.
-                 Dipasang lewat data-bg + CSSOM agar CSP tidak butuh style-src unsafe-inline. --}}
-            <div class="absolute inset-0 bg-cover bg-center opacity-55 mix-blend-screen"
-                 data-bg="{{ $hero['image_url'] }}"
-                 :style="{ transform: `scale(1.06) translateY(${y * 0.035}px)` }"></div>
-            <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,4,4,0.96)_0%,rgba(20,6,8,0.9)_38%,rgba(42,10,12,0.76)_66%,rgba(8,5,7,0.88)_100%)]"></div>
-            <div class="absolute inset-0 bg-[radial-gradient(55%_50%_at_72%_36%,rgba(153,27,27,0.42),transparent_72%)]"></div>
+             data-bg="{{ $backgroundUrl }}"
+             :style="backgroundStyle"></div>
+        @if ($configuredBackgroundUrl)
+            <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,4,4,0.60)_0%,rgba(20,6,8,0.38)_38%,rgba(42,10,12,0.16)_66%,rgba(8,5,7,0.08)_100%)]"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(55%_50%_at_72%_36%,rgba(153,27,27,0.22),transparent_72%)]"></div>
         @endif
         {{-- 2. Overlay gelap kiri untuk keterbacaan teks --}}
         <div class="hero-overlay absolute inset-0"></div>

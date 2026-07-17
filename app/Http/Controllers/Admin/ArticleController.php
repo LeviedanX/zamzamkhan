@@ -42,11 +42,15 @@ class ArticleController extends Controller
         if ($request->hasFile('cover_image')) {
             $data['cover_image'] = PublicMedia::store($request->file('cover_image'), 'articles');
         }
+        if ($request->hasFile('og_image')) {
+            $data['og_image_path'] = PublicMedia::store($request->file('og_image'), 'articles/seo');
+        }
 
         try {
             Article::create($data);
         } catch (\Throwable $e) {
             PublicMedia::delete($data['cover_image'] ?? null);
+            PublicMedia::delete($data['og_image_path'] ?? null);
             throw $e;
         }
 
@@ -68,23 +72,35 @@ class ArticleController extends Controller
         $data = $this->applyPublishedAt($data, $article);
 
         $oldCover = $article->cover_image;
+        $oldOgImage = $article->og_image_path;
         $newCover = null;
+        $newOgImage = null;
         if ($request->boolean('remove_cover_image')) {
             $data['cover_image'] = null;
         } elseif ($request->hasFile('cover_image')) {
             $newCover = PublicMedia::store($request->file('cover_image'), 'articles');
             $data['cover_image'] = $newCover;
         }
+        if ($request->boolean('remove_og_image')) {
+            $data['og_image_path'] = null;
+        } elseif ($request->hasFile('og_image')) {
+            $newOgImage = PublicMedia::store($request->file('og_image'), 'articles/seo');
+            $data['og_image_path'] = $newOgImage;
+        }
 
         try {
             $article->update($data);
         } catch (\Throwable $e) {
             PublicMedia::delete($newCover);
+            PublicMedia::delete($newOgImage);
             throw $e;
         }
 
         if (($newCover || $request->boolean('remove_cover_image')) && $oldCover !== $newCover) {
             PublicMedia::delete($oldCover);
+        }
+        if (($newOgImage || $request->boolean('remove_og_image')) && $oldOgImage !== $newOgImage) {
+            PublicMedia::delete($oldOgImage);
         }
 
         return redirect()->route('admin.articles.index')->with('ok', 'Artikel berhasil diperbarui.');
@@ -93,8 +109,10 @@ class ArticleController extends Controller
     public function destroy(Article $article)
     {
         $cover = $article->cover_image;
+        $ogImage = $article->og_image_path;
         $article->delete();
         PublicMedia::delete($cover);
+        PublicMedia::delete($ogImage);
 
         return back()->with('ok', 'Artikel berhasil dihapus.');
     }
@@ -114,11 +132,21 @@ class ArticleController extends Controller
             'published_at' => ['nullable', 'date'],
             'meta_title' => ['nullable', 'string', 'max:70'],
             'meta_description' => ['nullable', 'string', 'max:160'],
+            'canonical_url' => ['nullable', 'url:http,https', 'max:2048'],
+            'seo_robots' => ['nullable', Rule::in(['index, follow', 'noindex, follow', 'noindex, nofollow'])],
+            'og_title' => ['nullable', 'string', 'max:120'],
+            'og_description' => ['nullable', 'string', 'max:200'],
+            'og_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'remove_og_image' => ['nullable', 'boolean'],
+            'exclude_from_sitemap' => ['nullable', 'boolean'],
         ], [], [
             'article_category_id' => 'kategori',
         ]);
 
-        unset($data['cover_image'], $data['remove_cover_image']);
+        unset($data['cover_image'], $data['remove_cover_image'], $data['og_image'], $data['remove_og_image']);
+
+        $data['exclude_from_sitemap'] = $request->boolean('exclude_from_sitemap');
+        $data['seo_robots'] = $data['seo_robots'] ?? ($article?->seo_robots ?: 'index, follow');
 
         return $data;
     }

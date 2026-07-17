@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 // Agenda selesai tetap disimpan sebagai histori CMS. Homepage sudah menyaring
 // agenda berdasarkan waktu selesai, jadi tidak perlu penghapusan otomatis.
 Schedule::command('operational:purge')->dailyAt('02:15')->withoutOverlapping();
+Schedule::command('security:scan')->dailyAt('03:00')->withoutOverlapping();

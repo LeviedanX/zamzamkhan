@@ -13,10 +13,29 @@
         ['label' => 'Facebook', 'url' => old('facebook_url', $setting->facebook_url)],
         ['label' => 'TikTok', 'url' => old('tiktok_url', $setting->tiktok_url)],
     ])->filter(fn ($x) => filled($x['url']))->values();
-    $socialItems = collect(old('social_links', $setting->exists ? ($setting->social_links ?? []) : $legacySocials->all()))
+    // Kondisi lama memakai $setting->exists untuk memilih sumber data, padahal baris
+    // site_settings biasanya sudah ada di semua environment (dibuat seeder), sehingga
+    // cabang legacy tidak pernah tercapai walau social_links masih NULL — itulah
+    // sebabnya form ini sempat menampilkan "0 akun" padahal tiga akun sudah live di
+    // footer publik lewat kolom lama. Kondisi yang benar: pakai social_links kalau
+    // sudah terisi, kalau belum baru fallback ke kolom lama.
+    $socialItems = collect(old('social_links', filled($setting->social_links ?? null) ? $setting->social_links : $legacySocials->all()))
         ->map(fn ($x) => ['label' => $x['label'] ?? '', 'url' => $x['url'] ?? ''])
         ->filter(fn ($x) => filled($x['label']) || filled($x['url']))
         ->values();
+    $formConfig = [
+        'companyName' => old('company_name', $settingValue('company_name', config('company.name'))),
+        'tagline' => old('tagline', $settingValue('tagline', config('company.tagline'))),
+        'description' => old('company_description', $settingValue('company_description', config('company.about'))),
+        'vision' => old('vision', $settingValue('vision', config('company.vision'))),
+        'missionItems' => $missionItems->values(),
+        'phone' => old('phone', $settingValue('phone', config('company.phone_display'))),
+        'whatsapp' => old('whatsapp', $settingValue('whatsapp', config('company.phone_raw'))),
+        'email' => old('email', $settingValue('email', config('company.email'))),
+        'address' => old('address', $settingValue('address', config('company.address'))),
+        'operatingHours' => old('operating_hours', $settingValue('operating_hours', config('company.operating_hours'))),
+        'socialItems' => $socialItems->values(),
+    ];
 @endphp
 
 @section('content')
@@ -27,48 +46,7 @@
 </div>
 
 <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="space-y-6 pb-8"
-      x-data="{
-          companyName: @js(old('company_name', $settingValue('company_name', config('company.name')))),
-          tagline: @js(old('tagline', $settingValue('tagline', config('company.tagline')))),
-          description: @js(old('company_description', $settingValue('company_description', config('company.about')))),
-          vision: @js(old('vision', $settingValue('vision', config('company.vision')))),
-          missionItems: @js($missionItems->values()),
-          missionDraft: '',
-          phone: @js(old('phone', $settingValue('phone', config('company.phone_display')))),
-          whatsapp: @js(old('whatsapp', $settingValue('whatsapp', config('company.phone_raw')))),
-          email: @js(old('email', $settingValue('email', config('company.email')))),
-          address: @js(old('address', $settingValue('address', config('company.address')))),
-          operatingHours: @js(old('operating_hours', $settingValue('operating_hours', config('company.operating_hours')))),
-          socialItems: @js($socialItems->values()),
-          socialDraft: { label: '', url: '' },
-          missionPayload() {
-              return this.missionItems.map((item) => (item || '').trim()).filter(Boolean).join('\n');
-          },
-          addMission() {
-              const value = this.missionDraft.trim();
-              if (! value) return;
-              this.missionItems.push(value);
-              this.missionDraft = '';
-          },
-          removeMission(index) {
-              this.missionItems.splice(index, 1);
-          },
-          cleanSocials() {
-              return this.socialItems
-                  .map((item) => ({ label: (item.label || '').trim(), url: (item.url || '').trim() }))
-                  .filter((item) => item.label && item.url);
-          },
-          addSocial() {
-              const label = this.socialDraft.label.trim();
-              const url = this.socialDraft.url.trim();
-              if (! label || ! url) return;
-              this.socialItems.push({ label, url });
-              this.socialDraft = { label: '', url: '' };
-          },
-          removeSocial(index) {
-              this.socialItems.splice(index, 1);
-          }
-      }">
+      x-data="siteSettingsForm" data-config="{{ json_encode($formConfig, JSON_THROW_ON_ERROR) }}">
     @csrf @method('PUT')
 
     <div class="admin-form-shell">
@@ -110,14 +88,14 @@
                 <div>
                     <div class="mb-2 flex items-center justify-between gap-3">
                         <label class="{{ $lbl }} mb-0!">Misi</label>
-                        <span class="text-xs font-semibold text-navy-400" x-text="`${missionItems.filter((item) => (item || '').trim()).length} poin`"></span>
+                        <span class="text-xs font-semibold text-navy-400" x-text="missionCountLabel"></span>
                     </div>
                     <input type="hidden" name="mission" :value="missionPayload()">
                     <div class="space-y-2">
                         <template x-for="(mission, index) in missionItems" :key="index">
                             <div class="flex items-center gap-2 rounded-2xl border border-navy-100 bg-white/70 p-2">
                                 <span class="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-red-900 text-xs font-bold text-white" x-text="index + 1"></span>
-                                <input type="text" x-model="missionItems[index]" class="{{ $inp }} py-2!" :aria-label="`Misi ${index + 1}`">
+                                <input type="text" x-model="missionItems[index]" class="{{ $inp }} py-2!" :aria-label="missionLabel(index)">
                                 <button type="button" class="rounded-xl border border-red-900/20 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-900/5" @click="removeMission(index)">Hapus</button>
                             </div>
                         </template>
@@ -180,13 +158,13 @@
                 <div>
                     <div class="mb-2 flex items-center justify-between gap-3">
                         <label class="{{ $lbl }} mb-0!">Sosial media</label>
-                        <span class="text-xs font-semibold text-navy-400" x-text="`${cleanSocials().length} akun`"></span>
+                        <span class="text-xs font-semibold text-navy-400" x-text="socialCountLabel"></span>
                     </div>
                     <div class="space-y-2">
                         <template x-for="(social, index) in socialItems" :key="index">
                             <div class="grid gap-2 rounded-2xl border border-navy-100 bg-white/70 p-2 sm:grid-cols-[150px_minmax(0,1fr)_auto]">
-                                <input type="text" x-model="socialItems[index].label" :name="`social_links[${index}][label]`" class="{{ $inp }} py-2!" placeholder="Label">
-                                <input type="url" x-model="socialItems[index].url" :name="`social_links[${index}][url]`" class="{{ $inp }} py-2!" placeholder="https://...">
+                                <input type="text" x-model="socialItems[index].label" :name="socialLabelName(index)" class="{{ $inp }} py-2!" placeholder="Label">
+                                <input type="url" x-model="socialItems[index].url" :name="socialUrlName(index)" class="{{ $inp }} py-2!" placeholder="https://...">
                                 <button type="button" class="rounded-xl border border-red-900/20 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-900/5" @click="removeSocial(index)">Hapus</button>
                             </div>
                         </template>

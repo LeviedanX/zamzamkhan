@@ -41,8 +41,7 @@ class AdminSecurityAndOperationsTest extends TestCase
         $admin->update(['is_active' => false]);
 
         $this->get(route('admin.dashboard'))
-            ->assertRedirect(route('admin.login'))
-            ->assertSessionHasErrors('email');
+            ->assertRedirect(route('home'));
         $this->assertGuest('admin');
     }
 
@@ -121,8 +120,8 @@ class AdminSecurityAndOperationsTest extends TestCase
             'current_email' => $admin->email,
             'current_password' => 'PasswordLama123',
             'email' => $admin->email,
-            'password' => 'PasswordBaru456',
-            'password_confirmation' => 'PasswordBaru456',
+            'password' => 'Password-Baru-456!',
+            'password_confirmation' => 'Password-Baru-456!',
         ])->assertRedirect(route('admin.account.edit'));
 
         $this->assertDatabaseMissing('sessions', ['id' => 'sesi-perangkat-lama']);
@@ -153,6 +152,25 @@ class AdminSecurityAndOperationsTest extends TestCase
         }
     }
 
+    public function test_statistik_dashboard_diambil_dalam_satu_query_agregat(): void
+    {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->actingAs($this->admin(), 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Navigasi Cepat');
+
+        $aggregateQueries = collect(DB::getQueryLog())
+            ->pluck('query')
+            ->filter(fn (string $query) => str_contains($query, 'articles') && str_contains($query, 'web_visits'));
+
+        DB::disableQueryLog();
+
+        $this->assertCount(1, $aggregateQueries);
+    }
+
     public function test_command_rotasi_admin_tidak_menerima_password_dari_argumen(): void
     {
         config()->set('session.driver', 'database');
@@ -170,8 +188,8 @@ class AdminSecurityAndOperationsTest extends TestCase
             '--email' => 'rotasi@gmail.com',
             '--name' => 'Admin Rotasi',
         ])
-            ->expectsQuestion('Password baru', 'PasswordBaru456')
-            ->expectsQuestion('Ulangi password baru', 'PasswordBaru456')
+            ->expectsQuestion('Password baru', 'Password-Baru-456!')
+            ->expectsQuestion('Ulangi password baru', 'Password-Baru-456!')
             ->assertSuccessful();
 
         $this->assertDatabaseHas('admins', ['id' => $admin->id, 'email' => 'rotasi@gmail.com']);

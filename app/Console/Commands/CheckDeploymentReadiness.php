@@ -5,9 +5,11 @@ namespace App\Console\Commands;
 use App\Models\Admin;
 use App\Models\HeroSection;
 use App\Models\SiteSetting;
+use App\Support\AdminSecurity;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CheckDeploymentReadiness extends Command
 {
@@ -37,6 +39,13 @@ class CheckDeploymentReadiness extends Command
         $this->check('Nomor WhatsApp tersedia', filled(config('company.whatsapp_number')));
         $this->check('Command purge Agenda tersedia', array_key_exists('agendas:purge', Artisan::all()));
         $this->check('Command purge operasional tersedia', array_key_exists('operational:purge', Artisan::all()));
+        $this->check('Command security scan tersedia', array_key_exists('security:scan', Artisan::all()));
+        $this->check('Dokumentasi deployment tersedia', file_exists(base_path('docs/DEPLOYMENT.md')));
+        $this->check('Security log channel tersedia', config('logging.channels.security.driver') === 'daily');
+        $this->check('Idle timeout admin maksimal 30 menit', (int) config('admin.session_idle_seconds') > 0
+            && (int) config('admin.session_idle_seconds') <= 1800);
+        $this->check('Absolute timeout admin maksimal 8 jam', (int) config('admin.session_absolute_seconds') > 0
+            && (int) config('admin.session_absolute_seconds') <= 28800);
 
         if ($this->option('production')) {
             $url = (string) config('app.url');
@@ -49,8 +58,10 @@ class CheckDeploymentReadiness extends Command
             $this->check('Cookie session secure', (bool) config('session.secure'));
             $this->check('Session persistent server-side', in_array(config('session.driver'), ['database', 'redis'], true));
             $this->check('CSP enforcement aktif', (bool) config('security.csp_enabled'));
+            $this->check('Filter anti judol aktif', (bool) config('admin.block_gambling_content'));
             $this->check('HSTS aktif', (bool) config('security.hsts_enabled'));
             $this->check('User database bukan root', $dbUser !== '' && ! in_array($dbUser, ['root', 'sa', 'postgres'], true));
+            $this->check('Password bootstrap admin kuat atau sudah dihapus', $this->seedPasswordIsSafe());
         }
 
         $this->table(['Status', 'Pemeriksaan', 'Catatan'], $this->rows);
@@ -109,5 +120,18 @@ class CheckDeploymentReadiness extends Command
         } catch (\Throwable) {
             return ['database-unavailable'];
         }
+    }
+
+    private function seedPasswordIsSafe(): bool
+    {
+        $password = config('admin.seed.password');
+        if (! filled($password)) {
+            return true;
+        }
+
+        return ! Validator::make(
+            ['password' => $password],
+            ['password' => ['required', AdminSecurity::passwordRule()]],
+        )->fails();
     }
 }

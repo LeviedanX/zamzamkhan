@@ -24,9 +24,11 @@ class IntegratedCmsFeaturesTest extends TestCase
         foreach ([
             'admin.article-categories.index', 'admin.business-categories.index',
             'admin.agendas.index', 'admin.applications.index', 'admin.reports.index',
+            'admin.process-statuses.index',
             'admin.clients.index', 'admin.testimonials.index',
             'admin.advantages.index', 'admin.statistics.index',
             'admin.analytics.index', 'admin.account.edit',
+            'admin.shortcuts.index',
         ] as $name) {
             $this->assertTrue(Route::has($name), "Route {$name} tidak terdaftar.");
         }
@@ -66,6 +68,7 @@ class IntegratedCmsFeaturesTest extends TestCase
             'admin.agendas.create',
             'admin.applications.index',
             'admin.applications.create',
+            'admin.process-statuses.index',
             'admin.reports.index',
             'admin.clients.index',
             'admin.clients.create',
@@ -75,6 +78,7 @@ class IntegratedCmsFeaturesTest extends TestCase
             'admin.advantages.create',
             'admin.statistics.index',
             'admin.statistics.create',
+            'admin.shortcuts.index',
         ] as $routeName) {
             $response = $this->actingAs($admin, 'admin')->get(route($routeName))->assertOk();
 

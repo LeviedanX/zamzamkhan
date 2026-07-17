@@ -1,40 +1,90 @@
 @extends('layouts.app')
 
 @php
-    $metaTitle = $article->meta_title ?: $article->title;
-    $metaDesc = $article->meta_description ?: ($article->excerpt ?: 'Artikel dan insight bisnis dari PT Zam Zam Khan — konsultan halal dan legalitas usaha di Malang.');
-    $ogImage = $article->cover_image ? asset('storage/'.$article->cover_image) : (config('company.logo_url') ?: asset('images/logo-zzk.png'));
-    $canonical = route('artikel.show', $article->slug);
+    $metaTitle = $article->seoTitle();
+    $documentTitle = filled($article->meta_title) ? $metaTitle : $metaTitle.' | '.config('company.name', 'PT Zam Zam Khan');
+    $metaDesc = $article->seoDescription();
+    $ogImage = $article->socialImageUrl();
+    $articleImage = $article->articleImageUrl();
+    $canonical = $article->canonicalUrl();
+    $publishedAt = $article->published_at ?? $article->created_at;
 @endphp
 
-@section('title', $metaTitle.' | '.config('company.name', 'PT Zam Zam Khan'))
+@section('title', $documentTitle)
 @section('description', $metaDesc)
 @section('canonical', $canonical)
+@section('robots', $article->robotsDirective())
 @section('ogType', 'article')
-@section('ogTitle', $metaTitle)
-@section('ogDescription', $metaDesc)
+@section('ogTitle', $article->socialTitle())
+@section('ogDescription', $article->socialDescription())
 @section('ogImage', $ogImage)
+@section('ogImageAlt', $article->cover_alt ?: $article->title)
 @section('ogUrl', $canonical)
+@section('articlePublishedTime', optional($publishedAt)->toAtomString())
+@section('articleModifiedTime', optional($article->updated_at)->toAtomString())
+@if ($article->category) @section('articleSection', $article->category->name) @endif
 
 @section('jsonld')
     @php
-        $jsonLd = array_filter([
+        $organizationId = url('/').'#organization';
+        $webPageId = $canonical.'#webpage';
+        $articleId = $canonical.'#article';
+        $jsonLd = [
             '@context' => 'https://schema.org',
-            '@type' => 'BlogPosting',
-            'headline' => $article->title,
-            'description' => $metaDesc,
-            'image' => $article->cover_image ? $ogImage : null,
-            'datePublished' => optional($article->published_at ?? $article->created_at)->toAtomString(),
-            'dateModified' => optional($article->updated_at)->toAtomString(),
-            'articleSection' => $article->category?->name,
-            'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $canonical],
-            'author' => ['@type' => 'Organization', 'name' => config('company.name')],
-            'publisher' => [
-                '@type' => 'Organization',
-                'name' => config('company.name'),
-                'logo' => ['@type' => 'ImageObject', 'url' => config('company.logo_url') ?: asset('images/logo-zzk.png')],
+            '@graph' => [
+                [
+                    '@type' => 'Organization',
+                    '@id' => $organizationId,
+                    'name' => config('company.name'),
+                    'url' => url('/'),
+                    'logo' => [
+                        '@type' => 'ImageObject',
+                        'url' => config('company.logo_url') ?: asset('images/logo-zzk.png'),
+                    ],
+                ],
+                [
+                    '@type' => 'WebSite',
+                    '@id' => url('/').'#website',
+                    'url' => url('/'),
+                    'name' => config('company.name'),
+                    'publisher' => ['@id' => $organizationId],
+                    'inLanguage' => 'id-ID',
+                ],
+                [
+                    '@type' => 'WebPage',
+                    '@id' => $webPageId,
+                    'url' => $canonical,
+                    'name' => $metaTitle,
+                    'description' => $metaDesc,
+                    'isPartOf' => ['@id' => url('/').'#website'],
+                    'breadcrumb' => ['@id' => $canonical.'#breadcrumb'],
+                    'inLanguage' => 'id-ID',
+                ],
+                array_filter([
+                    '@type' => 'BlogPosting',
+                    '@id' => $articleId,
+                    'mainEntityOfPage' => ['@id' => $webPageId],
+                    'headline' => $article->title,
+                    'description' => $metaDesc,
+                    'image' => $articleImage ? [$articleImage] : null,
+                    'datePublished' => optional($publishedAt)->toAtomString(),
+                    'dateModified' => optional($article->updated_at)->toAtomString(),
+                    'articleSection' => $article->category?->name,
+                    'author' => ['@id' => $organizationId],
+                    'publisher' => ['@id' => $organizationId],
+                    'isAccessibleForFree' => true,
+                ], fn ($value) => $value !== null && $value !== ''),
+                [
+                    '@type' => 'BreadcrumbList',
+                    '@id' => $canonical.'#breadcrumb',
+                    'itemListElement' => [
+                        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Beranda', 'item' => route('home')],
+                        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Artikel', 'item' => route('artikel.index')],
+                        ['@type' => 'ListItem', 'position' => 3, 'name' => $article->title, 'item' => $canonical],
+                    ],
+                ],
             ],
-        ]);
+        ];
         $jsonFlags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
             | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
     @endphp

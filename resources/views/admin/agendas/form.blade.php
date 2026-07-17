@@ -47,7 +47,8 @@
                     : $now;
             @endphp
             <div class="admin-form-grid admin-form-grid--2"
-                 x-data="{ startsAt: @js($startValue ?? ''), min: @js($startMin) }">
+                 x-data="agendaSchedule"
+                 data-config="{{ json_encode(['startsAt' => $startValue ?? '', 'min' => $startMin], JSON_THROW_ON_ERROR) }}">
                 <label class="admin-field">
                     <span>Mulai <b aria-hidden="true">*</b></span>
                     <input type="datetime-local" name="starts_at" x-model="startsAt" :min="min" required>

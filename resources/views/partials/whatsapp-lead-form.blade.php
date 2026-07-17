@@ -12,10 +12,8 @@
         ->values();
 @endphp
 
-<div x-data="whatsappLeadForm({
-        waNumber: @js($waNumber),
-        services: @js($waServices),
-    })"
+<div x-data="whatsappLeadForm"
+     data-config="{{ json_encode(['waNumber' => $waNumber, 'services' => $waServices], JSON_THROW_ON_ERROR) }}"
      x-show="open"
      x-cloak
      @keydown.escape.window="close()"
@@ -118,7 +116,7 @@
                             <span x-text="mode === 'service' ? 'Kebutuhan singkat' : 'Ceritakan kebutuhan atau kendala usaha'">Ceritakan kebutuhan atau kendala usaha</span>
                             <span>*</span>
                         </label>
-                        <span class="wa-lead-count" x-text="`${values.needs.length}/280`">0/280</span>
+                        <span class="wa-lead-count" x-text="needsCount">0/280</span>
                     </div>
                     <textarea id="wa-lead-needs" x-model.trim="values.needs" @input="clearError('needs')"
                               rows="4" maxlength="280" class="wa-lead-input wa-lead-textarea"

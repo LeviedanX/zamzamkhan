@@ -62,6 +62,7 @@ class HeroSectionTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('CTA Kedua')
+            ->assertSee('data-bg="'.asset('images/bg1-hq.webp').'?v=', false)
             ->assertSee('href="#layanan"', false);
 
         $hero = HeroSection::where('title', 'Judul Hero Baru')->firstOrFail();

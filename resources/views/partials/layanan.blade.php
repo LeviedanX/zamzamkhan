@@ -17,9 +17,8 @@
 
 @if (! empty(config('company.services')))
 <section id="layanan" class="section bg-navy-50/60 dark:bg-navy-900"
-         x-data="{ open: false, svc: { title: '', long: '', cocok: '', benefits: [], alur: [], waMessage: '' } }"
-         @keydown.escape.window="open = false"
-         x-effect="document.body.style.overflow = open ? 'hidden' : ''">
+         x-data="serviceModal"
+         @keydown.escape.window="closeService">
     <div class="container-x">
         <div class="reveal mx-auto max-w-2xl text-center">
             <span class="eyebrow">Layanan Utama</span>
@@ -54,7 +53,8 @@
                     @endif
                     <div class="service-card__actions">
                         <button type="button" class="service-btn service-btn--ghost"
-                                @click="svc = @js($modal); open = true"
+                                data-service="{{ json_encode($modal, JSON_THROW_ON_ERROR) }}"
+                                @click="openService"
                                 aria-haspopup="dialog">
                             Detail
                         </button>
@@ -79,12 +79,12 @@
     <div x-show="open" x-cloak class="fixed inset-0 z-60 flex items-end justify-center p-0 sm:items-center sm:p-6"
          role="dialog" aria-modal="true" aria-labelledby="service-modal-title">
         <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm"
-             x-show="open" x-transition.opacity @click="open = false"></div>
+             x-show="open" x-transition.opacity @click="closeService"></div>
         <div class="service-modal relative w-full max-w-lg"
              x-show="open"
              x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-6 sm:scale-95">
-            <button type="button" @click="open = false" aria-label="Tutup detail" class="service-modal__close">
+            <button type="button" @click="closeService" aria-label="Tutup detail" class="service-modal__close">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
 
@@ -132,7 +132,7 @@
 
             @if ($serviceWhatsappEnabled)
             <button type="button" class="btn-primary mt-6 w-full"
-                    @click="$dispatch('open-whatsapp-lead', { mode: 'service', service: svc.title, needs: svc.waMessage || '' }); open = false">
+                    @click="consultService">
                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.86 9.86 0 004.74 1.21h.01c5.46 0 9.9-4.44 9.9-9.9 0-2.64-1.03-5.13-2.9-7A9.82 9.82 0 0012.04 2z"/></svg>
                 Konsultasikan via WhatsApp
             </button>

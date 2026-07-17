@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BusinessApplicationController;
 use App\Http\Controllers\Admin\BusinessCategoryController;
+use App\Http\Controllers\Admin\BusinessProcessStatusController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
@@ -15,13 +16,19 @@ use App\Http\Controllers\Admin\HeroController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\ShortcutController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\StatisticController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\VisitorAnalyticsController;
 use App\Http\Controllers\ArticleController;
-use App\Http\Middleware\EnsureDesktopAdminAccess;
+use App\Http\Middleware\AuditAdminMutation;
+use App\Http\Middleware\ConcealUnauthenticatedAdmin;
 use App\Http\Middleware\EnsureAdminIsActive;
+use App\Http\Middleware\EnsureDesktopAdminAccess;
+use App\Http\Middleware\RejectSuspiciousAdminInput;
+use App\Http\Middleware\RequireAdminLoginEntry;
+use App\Http\Middleware\UseAdminGuard;
 use App\Models\Article;
 use App\Models\HeroSection;
 use App\Models\Service;
@@ -37,7 +44,8 @@ Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel
 
 // SEO: sitemap & robots (dinamis agar URL sesuai environment)
 Route::get('/sitemap.xml', function () {
-    $home = url('/');
+    $escape = fn (string $value) => htmlspecialchars($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+    $home = $escape(url('/'));
 
     // lastmod harus mencerminkan perubahan konten sungguhan. Memakai now() akan
     // memberi tahu crawler bahwa setiap halaman berubah setiap kali sitemap
@@ -58,14 +66,22 @@ Route::get('/sitemap.xml', function () {
     $indexLastmod = $toAtom($articlesLastmod);
 
     $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
-        .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n"
-        ."  <url>\n    <loc>{$home}</loc>\n    <lastmod>{$lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n"
-        ."  <url>\n    <loc>".route('artikel.index')."</loc>\n    <lastmod>{$indexLastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n";
+        .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'."\n"
+        ."  <url>\n    <loc>{$home}</loc>\n    <lastmod>{$lastmod}</lastmod>\n  </url>\n"
+        ."  <url>\n    <loc>".$escape(route('artikel.index'))."</loc>\n    <lastmod>{$indexLastmod}</lastmod>\n  </url>\n";
 
-    foreach (Article::published()->latestPublished()->get(['slug', 'updated_at']) as $article) {
-        $loc = route('artikel.show', $article->slug);
+    foreach (Article::published()->latestPublished()->get() as $article) {
+        if (! $article->isSitemapEligible()) {
+            continue;
+        }
+
+        $loc = $escape(route('artikel.show', $article->slug));
         $mod = $article->updated_at?->toAtomString() ?? $lastmod;
-        $xml .= "  <url>\n    <loc>{$loc}</loc>\n    <lastmod>{$mod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n";
+        $image = $article->articleImageUrl();
+        $imageXml = $image
+            ? "\n    <image:image>\n      <image:loc>".$escape($image)."</image:loc>\n      <image:title>".$escape($article->title)."</image:title>\n    </image:image>"
+            : '';
+        $xml .= "  <url>\n    <loc>{$loc}</loc>\n    <lastmod>{$mod}</lastmod>{$imageXml}\n  </url>\n";
     }
 
     $xml .= '</urlset>';
@@ -82,19 +98,33 @@ Route::get('/robots.txt', function () {
 // ---------------------------------------------------------------------------
 // Admin
 // ---------------------------------------------------------------------------
-Route::prefix('admin')->name('admin.')->middleware(EnsureDesktopAdminAccess::class)->group(function () {
-    Route::middleware('guest:admin')->group(function () {
-        Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-        Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
+Route::prefix('admin')->name('admin.')->middleware([UseAdminGuard::class, EnsureDesktopAdminAccess::class])->group(function () {
+    Route::post('access', [AuthController::class, 'requestAccess'])
+        ->middleware('throttle:10,1')
+        ->name('access');
+
+    Route::middleware(['guest:admin', RequireAdminLoginEntry::class])->group(function () {
+        Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+        Route::post('/', [AuthController::class, 'login'])->name('login.attempt');
     });
 
-    Route::middleware(['auth:admin', EnsureAdminIsActive::class])->group(function () {
-        Route::get('/', fn () => redirect()->route('admin.dashboard'));
+    Route::middleware([
+        ConcealUnauthenticatedAdmin::class,
+        EnsureAdminIsActive::class,
+        RejectSuspiciousAdminInput::class,
+        AuditAdminMutation::class,
+    ])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('analytics', [VisitorAnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('account', [AccountController::class, 'edit'])->name('account.edit');
         Route::put('account', [AccountController::class, 'update'])->name('account.update');
+        Route::get('shortcuts', [ShortcutController::class, 'index'])->name('shortcuts.index');
+        Route::middleware('throttle:20,1')->group(function () {
+            Route::post('shortcuts/preview', [ShortcutController::class, 'preview'])->name('shortcuts.preview');
+            Route::post('shortcuts/apply', [ShortcutController::class, 'apply'])->name('shortcuts.apply');
+            Route::post('shortcuts/{contentReplacementRun}/undo', [ShortcutController::class, 'undo'])->name('shortcuts.undo');
+        });
 
         // CRUD konten
         Route::resource('articles', AdminArticleController::class)->except('show');
@@ -106,6 +136,7 @@ Route::prefix('admin')->name('admin.')->middleware(EnsureDesktopAdminAccess::cla
         Route::resource('testimonials', TestimonialController::class)->except('show');
         Route::resource('agendas', AgendaController::class)->except('show');
         Route::resource('applications', BusinessApplicationController::class);
+        Route::resource('process-statuses', BusinessProcessStatusController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('business-categories', BusinessCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('article-categories', ArticleCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');

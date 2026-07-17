@@ -22,7 +22,8 @@
                 <span>Judul <b aria-hidden="true">*</b></span>
                 <input name="title" value="{{ old('title', $advantage->title) }}" required maxlength="160">
             </label>
-            <div class="admin-field" x-data="{ icon: @js(old('icon', $advantage->icon) ?? '') }">
+            <div class="admin-field" x-data="advantageIcon"
+                 data-config="{{ json_encode(['icon' => old('icon', $advantage->icon) ?? ''], JSON_THROW_ON_ERROR) }}">
                 <span id="advantage-icon-label">Ikon</span>
                 <div class="admin-icon-picker">
                     <span class="admin-icon-picker__preview" aria-hidden="true">
@@ -71,4 +72,3 @@
     </section>
 </form>
 @endsection
-

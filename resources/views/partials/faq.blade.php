@@ -24,7 +24,7 @@
         </div>
 
         {{-- ── Kanan: accordion card premium ── --}}
-        <div class="reveal reveal-right lg:col-span-8" data-reveal-delay="120" x-data="{ active: 0 }">
+        <div class="reveal reveal-right lg:col-span-8" data-reveal-delay="120" x-data="faqAccordion">
             <div class="faq-card">
                 @foreach (config('company.faq') as $i => $item)
                     <div class="faq-item" :class="active === {{ $i }} ? 'faq-item--active' : ''"

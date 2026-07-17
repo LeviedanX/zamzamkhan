@@ -7,6 +7,7 @@ use App\Models\Advantage;
 use App\Models\Agenda;
 use App\Models\Article;
 use App\Models\BusinessApplication;
+use App\Models\BusinessProcessStatus;
 use App\Models\Client;
 use App\Models\Faq;
 use App\Models\HeroSection;
@@ -16,32 +17,61 @@ use App\Models\SiteSetting;
 use App\Models\Statistic;
 use App\Models\Testimonial;
 use App\Models\WebVisit;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $stats = [
-            'articles' => Article::count(),
-            'articles_draft' => Article::where('status', 'draft')->count(),
-            'articles_published' => Article::where('status', 'published')->count(),
-            'services' => Service::count(),
-            'services_active' => Service::where('is_active', true)->count(),
-            'faqs' => Faq::count(),
-            'faqs_active' => Faq::where('is_active', true)->count(),
-            'advantages_active' => Advantage::where('is_active', true)->count(),
-            'statistics_active' => Statistic::where('is_active', true)->count(),
-            'clients_active' => Client::where('is_active', true)->count(),
-            'testimonials_active' => Testimonial::where('is_active', true)->count(),
-            'agendas_active' => Agenda::where('is_active', true)->upcoming()->count(),
-            'applications' => BusinessApplication::count(),
-            'applications_ongoing' => BusinessApplication::whereNotIn('process_status', ['Sertifikat Terbit', 'Batal'])->count(),
-            'visits_today' => WebVisit::whereBetween('visited_at', [now()->startOfDay(), now()->endOfDay()])->count(),
-        ];
+        $today = [now()->startOfDay(), now()->endOfDay()];
+        $ongoingStatuses = BusinessProcessStatus::query()
+            ->select('name')
+            ->where('type', 'ongoing');
 
-        $heroConfigured = HeroSection::where('is_active', true)->whereNotNull('title')->exists();
-        $siteSetting = SiteSetting::first();
-        $seo = SeoSetting::where('page_key', 'home')->first();
+        // Seluruh angka dashboard dihitung dalam satu round-trip database.
+        // Scalar subquery mempertahankan hasil yang sama tanpa 20 query terpisah.
+        $counts = DB::query()
+            ->selectSub(Article::query()->selectRaw('count(*)'), 'articles')
+            ->selectSub(Article::query()->where('status', 'draft')->selectRaw('count(*)'), 'articles_draft')
+            ->selectSub(Article::query()->where('status', 'published')->selectRaw('count(*)'), 'articles_published')
+            ->selectSub(Service::query()->where('is_active', true)->selectRaw('count(*)'), 'services_active')
+            ->selectSub(Faq::query()->where('is_active', true)->selectRaw('count(*)'), 'faqs_active')
+            ->selectSub(Advantage::query()->where('is_active', true)->selectRaw('count(*)'), 'advantages_active')
+            ->selectSub(Statistic::query()->where('is_active', true)->selectRaw('count(*)'), 'statistics_active')
+            ->selectSub(Client::query()->where('is_active', true)->selectRaw('count(*)'), 'clients_active')
+            ->selectSub(Testimonial::query()->where('is_active', true)->selectRaw('count(*)'), 'testimonials_active')
+            ->selectSub(Agenda::query()->where('is_active', true)->upcoming()->selectRaw('count(*)'), 'agendas_active')
+            ->selectSub(BusinessApplication::query()->selectRaw('count(*)'), 'applications')
+            ->selectSub(
+                BusinessApplication::query()
+                    ->whereIn('process_status', $ongoingStatuses)
+                    ->selectRaw('count(*)'),
+                'applications_ongoing',
+            )
+            ->selectSub(BusinessProcessStatus::query()->selectRaw('count(*)'), 'process_statuses')
+            ->selectSub(WebVisit::query()->whereBetween('visited_at', $today)->selectRaw('count(*)'), 'visits_today')
+            ->selectSub(
+                HeroSection::query()->where('is_active', true)->whereNotNull('title')->selectRaw('count(*)'),
+                'hero_configured',
+            )
+            ->selectSub(SiteSetting::query()->selectRaw('count(*)'), 'site_configured')
+            ->selectSub(
+                SeoSetting::query()
+                    ->where('page_key', 'home')
+                    ->whereNotNull('meta_title')
+                    ->where('meta_title', '!=', '')
+                    ->selectRaw('count(*)'),
+                'seo_configured',
+            )
+            ->first();
+
+        $stats = collect((array) $counts)
+            ->map(fn ($value) => (int) $value)
+            ->all();
+
+        $heroConfigured = $stats['hero_configured'] > 0;
+        $siteConfigured = $stats['site_configured'] > 0;
+        $seoConfigured = $stats['seo_configured'] > 0;
 
         $tiles = [
             ['label' => 'Total Artikel', 'value' => $stats['articles'], 'route' => 'admin.articles.index'],
@@ -55,7 +85,7 @@ class DashboardController extends Controller
         $groups = [
             'Konten Website' => [
                 ['admin.hero.edit', 'Hero Utama', $heroConfigured ? 'Aktif dan siap tampil di halaman utama' : 'Belum diatur', 'M13 10V3L4 14h7v7l9-11h-7z'],
-                ['admin.settings.edit', 'Profil & Identitas', $siteSetting ? 'Informasi inti tersedia untuk public website' : 'Perlu dilengkapi', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
+                ['admin.settings.edit', 'Profil & Identitas', $siteConfigured ? 'Informasi inti tersedia untuk public website' : 'Perlu dilengkapi', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
                 ['admin.services.index', 'Layanan', $stats['services_active'].' layanan aktif', 'M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z'],
                 ['admin.advantages.index', 'Keunggulan', $stats['advantages_active'].' aktif', 'M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.8-5.4 2.8 1-6.1'],
                 ['admin.statistics.index', 'Statistik', $stats['statistics_active'].' aktif', 'M5 20V10h3v10H5Zm6 0V4h3v16h-3Zm6 0v-7h3v7h-3Z'],
@@ -68,12 +98,14 @@ class DashboardController extends Controller
             ],
             'Operasional Internal' => [
                 ['admin.applications.index', 'Data Pengajuan', $stats['applications'].' data, '.$stats['applications_ongoing'].' berjalan', 'M5 4h14v16H5V4Z'],
+                ['admin.process-statuses.index', 'Status Proses', $stats['process_statuses'].' jenis status', 'M5 7h14M5 12h14M5 17h9'],
                 ['admin.business-categories.index', 'Kategori Bisnis', 'Master data pengajuan', 'M4 6h16M4 12h16M4 18h10'],
                 ['admin.reports.index', 'Laporan', 'CSV Excel dan cetak PDF', 'M4 19V9h4v10H4ZM10 19V5h4v14h-4Z'],
                 ['admin.analytics.index', 'Analitik Pengunjung', $stats['visits_today'].' tayangan hari ini', 'M4 19V9m5 10V5m5 14v-7m5 7V3'],
             ],
             'Pengaturan' => [
-                ['admin.seo.edit', 'SEO Website', $seo?->meta_title ? 'Metadata utama tersedia' : 'Metadata perlu dilengkapi', 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'],
+                ['admin.shortcuts.index', 'Shortcut', 'Ganti teks massal dengan pratinjau dan undo', 'M4 7h16M4 12h10M4 17h7M17 14v6m-3-3h6'],
+                ['admin.seo.edit', 'SEO Website', $seoConfigured ? 'Metadata utama tersedia' : 'Metadata perlu dilengkapi', 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'],
                 ['admin.account.edit', 'Akun Admin', 'Kelola email dan password secara aman', 'M12 12a4 4 0 1 0 0-8M5 21a7 7 0 0 1 14 0'],
             ],
         ];

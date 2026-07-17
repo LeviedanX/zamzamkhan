@@ -67,8 +67,8 @@
                 <label class="admin-field">
                     <span>Status proses <b aria-hidden="true">*</b></span>
                     <select name="process_status" required>
-                        @foreach (\App\Models\BusinessApplication::STATUSES as $status)
-                            <option value="{{ $status }}" @selected(old('process_status', $application->process_status ?: 'Penawaran') === $status)>{{ $status }}</option>
+                        @foreach ($statuses as $status)
+                            <option value="{{ $status->name }}" @selected(old('process_status', $application->process_status ?: $defaultStatus) === $status->name)>{{ $status->name }}{{ $status->is_active ? '' : ' (nonaktif)' }}</option>
                         @endforeach
                     </select>
                 </label>

@@ -24,8 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ]),
             subdomains: false,
         );
-        // Guest yang belum login diarahkan ke halaman login admin.
-        $middleware->redirectGuestsTo(fn () => route('admin.login'));
+        // Route admin memiliki concealment 404 sendiri; fallback auth umum kembali ke homepage.
+        $middleware->redirectGuestsTo(fn () => route('home'));
         // Admin yang sudah login diarahkan ke dashboard bila membuka halaman guest.
         $middleware->redirectUsersTo('/admin/dashboard');
     })

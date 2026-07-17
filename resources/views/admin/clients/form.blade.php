@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 @section('title', $client->exists ? 'Edit Klien' : 'Tambah Klien')
 
+@php
+    $clientLogoUrl = $client->exists ? \App\Support\PublicMedia::previewUrl($client->logo_path) : null;
+@endphp
+
 @section('content')
 <x-admin.page-header
     eyebrow="Konten Website"
@@ -34,6 +38,10 @@
             </label>
             <label class="admin-field">
                 <span>Logo {{ $client->exists ? '(opsional)' : '*' }}</span>
+                @if ($clientLogoUrl)
+                    <span class="mb-1 text-xs font-semibold text-navy-500">Logo saat ini:</span>
+                    <img src="{{ $clientLogoUrl }}" alt="Logo {{ $client->name }} saat ini" class="mb-1 h-16 w-16 rounded-xl border border-navy-100 bg-white object-contain p-1">
+                @endif
                 <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" @required(!$client->exists)>
                 <small>JPG, PNG, atau WEBP maksimal 2 MB. Gunakan gambar dengan latar transparan jika tersedia.</small>
             </label>

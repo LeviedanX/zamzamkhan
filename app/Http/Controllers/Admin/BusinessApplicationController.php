@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BusinessApplicationRequest;
 use App\Models\BusinessApplication;
 use App\Models\BusinessCategory;
+use App\Models\BusinessProcessStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -17,7 +18,7 @@ class BusinessApplicationController extends Controller
         $filters = $request->validate([
             'keyword' => ['nullable', 'string', 'max:255'],
             'applicant_type' => ['nullable', Rule::in(['company', 'individual'])],
-            'process_status' => ['nullable', Rule::in(BusinessApplication::STATUSES)],
+            'process_status' => ['nullable', 'string', 'max:50', Rule::exists('business_process_statuses', 'name')],
             'business_category_id' => ['nullable', 'integer', Rule::exists('business_categories', 'id')],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
@@ -26,17 +27,25 @@ class BusinessApplicationController extends Controller
         $applications = (clone $base)->with('category')->latest('submitted_at')->latest('id')->paginate(15)->withQueryString();
         $summary = [
             'total' => (clone $base)->count(),
-            'issued' => (clone $base)->where('process_status', 'Sertifikat Terbit')->count(),
-            'ongoing' => (clone $base)->whereNotIn('process_status', ['Sertifikat Terbit', 'Batal'])->count(),
+            'issued' => (clone $base)->whereIn('process_status', BusinessProcessStatus::namesForType('issued'))->count(),
+            'ongoing' => (clone $base)->whereIn('process_status', BusinessProcessStatus::namesForType('ongoing'))->count(),
         ];
         $categories = BusinessCategory::where('is_active', true)->orderBy('name')->get();
+        $statuses = BusinessProcessStatus::ordered()->get();
 
-        return view('admin.applications.index', compact('applications', 'summary', 'filters', 'categories'));
+        return view('admin.applications.index', compact('applications', 'summary', 'filters', 'categories', 'statuses'));
     }
 
     public function create()
     {
-        return view('admin.applications.form', ['application' => new BusinessApplication, 'categories' => $this->categories(new BusinessApplication)]);
+        $application = new BusinessApplication;
+
+        return view('admin.applications.form', [
+            'application' => $application,
+            'categories' => $this->categories($application),
+            'statuses' => $this->statuses($application),
+            'defaultStatus' => BusinessProcessStatus::defaultName(),
+        ]);
     }
 
     public function store(BusinessApplicationRequest $request)
@@ -57,7 +66,12 @@ class BusinessApplicationController extends Controller
 
     public function edit(BusinessApplication $application)
     {
-        return view('admin.applications.form', ['application' => $application, 'categories' => $this->categories($application)]);
+        return view('admin.applications.form', [
+            'application' => $application,
+            'categories' => $this->categories($application),
+            'statuses' => $this->statuses($application),
+            'defaultStatus' => BusinessProcessStatus::defaultName(),
+        ]);
     }
 
     public function update(BusinessApplicationRequest $request, BusinessApplication $application)
@@ -102,6 +116,14 @@ class BusinessApplicationController extends Controller
         return BusinessCategory::where('is_active', true)
             ->when($application->business_category_id, fn ($q, $id) => $q->orWhere('id', $id))
             ->orderBy('name')
+            ->get();
+    }
+
+    private function statuses(BusinessApplication $application)
+    {
+        return BusinessProcessStatus::active()
+            ->when($application->process_status, fn ($q, $name) => $q->orWhere('name', $name))
+            ->ordered()
             ->get();
     }
 }

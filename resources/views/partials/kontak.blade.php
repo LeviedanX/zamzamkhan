@@ -106,11 +106,8 @@
         @if ($hasWhatsapp)
         <div class="reveal reveal-right" data-reveal-delay="120">
             <div class="contact-quick-card contact-consultation-card"
-                 x-data="whatsappLeadForm({
-                    waNumber: @js($contactWaNumber),
-                    services: @js($contactServices),
-                    inline: true,
-                 })">
+                 x-data="whatsappLeadForm"
+                 data-config="{{ json_encode(['waNumber' => $contactWaNumber, 'services' => $contactServices, 'inline' => true], JSON_THROW_ON_ERROR) }}">
                 <div class="contact-consultation-card__header">
                     <span class="contact-quick-card__eyebrow">Konsultasi WhatsApp</span>
                     <span class="contact-consultation-card__icon" aria-hidden="true">
@@ -176,7 +173,7 @@
                     <div class="wa-lead-field">
                         <div class="flex items-center justify-between gap-3">
                             <label for="contact-wa-needs" class="wa-lead-label">Ceritakan kebutuhan atau kendala usaha <span>*</span></label>
-                            <span class="wa-lead-count" x-text="`${values.needs.length}/280`">0/280</span>
+                            <span class="wa-lead-count" x-text="needsCount">0/280</span>
                         </div>
                         <textarea id="contact-wa-needs" x-model.trim="values.needs" @input="clearError('needs')"
                                   rows="4" maxlength="280" class="wa-lead-input wa-lead-textarea"

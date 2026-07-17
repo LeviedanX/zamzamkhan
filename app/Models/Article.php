@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\PublicMedia;
+use App\Support\SafeUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,7 @@ class Article extends Model
 
     protected $casts = [
         'published_at' => 'datetime',
+        'exclude_from_sitemap' => 'boolean',
     ];
 
     // Template pesan WhatsApp per slug kategori. Fallback: konsultasi umum.
@@ -91,5 +94,72 @@ class Article extends Model
         $date = $this->published_at ?? $this->created_at;
 
         return $date?->locale('id')->translatedFormat('d F Y');
+    }
+
+    public function seoTitle(): string
+    {
+        return trim((string) $this->meta_title) ?: $this->title;
+    }
+
+    public function seoDescription(): string
+    {
+        $description = trim((string) $this->meta_description)
+            ?: trim((string) $this->excerpt)
+            ?: Str::limit(trim(strip_tags((string) $this->content)), 160, '');
+
+        return $description ?: 'Artikel dan insight bisnis dari '.config('company.name', 'PT Zam Zam Khan').'.';
+    }
+
+    public function canonicalUrl(): string
+    {
+        return SafeUrl::http($this->canonical_url)
+            ?: route('artikel.show', $this->slug);
+    }
+
+    public function robotsDirective(): string
+    {
+        $robots = in_array($this->seo_robots, ['index, follow', 'noindex, follow', 'noindex, nofollow'], true)
+            ? $this->seo_robots
+            : 'index, follow';
+
+        return str_starts_with($robots, 'index')
+            ? $robots.', max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+            : $robots;
+    }
+
+    public function socialTitle(): string
+    {
+        return trim((string) $this->og_title) ?: $this->seoTitle();
+    }
+
+    public function socialDescription(): string
+    {
+        return trim((string) $this->og_description) ?: $this->seoDescription();
+    }
+
+    public function articleImageUrl(): ?string
+    {
+        return PublicMedia::previewUrl($this->og_image_path)
+            ?: PublicMedia::previewUrl($this->cover_image);
+    }
+
+    public function socialImageUrl(): string
+    {
+        return $this->articleImageUrl()
+            ?: (config('company.logo_url') ?: asset('images/logo-zzk.png'));
+    }
+
+    public function isIndexable(): bool
+    {
+        return ! str_starts_with((string) $this->seo_robots, 'noindex');
+    }
+
+    public function isSitemapEligible(): bool
+    {
+        $self = rtrim(route('artikel.show', $this->slug), '/');
+
+        return ! $this->exclude_from_sitemap
+            && $this->isIndexable()
+            && rtrim($this->canonicalUrl(), '/') === $self;
     }
 }

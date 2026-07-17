@@ -44,7 +44,7 @@ class AdminSeederSecurityTest extends TestCase
         ]);
 
         config()->set('admin.seed.email', $admin->email);
-        config()->set('admin.seed.password', 'Password-Baru-Yang-Tidak-Boleh-Dipakai!');
+        config()->set('admin.seed.password', 'Password-Baru-Tidak-Dipakai-789!');
         config()->set('admin.seed.name', 'Admin Diperbarui');
 
         $this->seed(AdminSeeder::class);
@@ -52,6 +52,6 @@ class AdminSeederSecurityTest extends TestCase
         $admin->refresh();
         $this->assertSame('Admin Diperbarui', $admin->name);
         $this->assertTrue(Hash::check('Password-Lama-456!', $admin->password));
-        $this->assertFalse(Hash::check('Password-Baru-Yang-Tidak-Boleh-Dipakai!', $admin->password));
+        $this->assertFalse(Hash::check('Password-Baru-Tidak-Dipakai-789!', $admin->password));
     }
 }

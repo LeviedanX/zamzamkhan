@@ -19,7 +19,7 @@
                 Kelola konten publik, data pengajuan, agenda, dan laporan PT Zam Zam Khan dari satu workspace.
             </p>
             <div class="mt-6 flex flex-wrap gap-3">
-                <span class="inline-flex max-w-full rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/80 backdrop-blur">
+                <span class="inline-flex max-w-full rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/80">
                     {{ $todayLabel }}
                 </span>
             </div>
@@ -27,7 +27,7 @@
 
         <div class="grid min-w-0 grid-cols-2 gap-3">
             @foreach ($tiles as $tile)
-                <a href="{{ route($tile['route']) }}" class="min-w-0 rounded-3xl border border-white/10 bg-white/10 p-4 text-white shadow-sm backdrop-blur transition hover:-translate-y-1 hover:bg-white/15 {{ $loop->last && $loop->count % 2 !== 0 ? 'col-span-2 sm:col-span-1' : '' }}">
+                <a href="{{ route($tile['route']) }}" class="min-w-0 rounded-3xl border border-white/10 bg-white/10 p-4 text-white shadow-sm transition hover:-translate-y-1 hover:bg-white/15 {{ $loop->last && $loop->count % 2 !== 0 ? 'col-span-2 sm:col-span-1' : '' }}">
                     <p class="break-words text-xs font-semibold uppercase tracking-[0.16em] text-white/60">{{ $tile['label'] }}</p>
                     <p class="mt-3 text-3xl font-semibold">{{ $tile['value'] }}</p>
                 </a>

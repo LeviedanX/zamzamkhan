@@ -5,79 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <meta name="csp-nonce" content="{{ $cspNonce }}">
-    <title>@yield('title', 'Panel Admin') - PT Zam Zam Khan</title>
+    <title>{{ $__env->hasSection('title') ? $__env->yieldContent('title') : 'Panel Admin' }} - PT Zam Zam Khan</title>
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
-    <script nonce="{{ $cspNonce }}">
-        (function () {
-            try {
-                var t = localStorage.getItem('theme');
-                if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                }
-            } catch (e) {}
-        })();
-    </script>
-    <style @if (! empty($cspNonce)) nonce="{{ $cspNonce }}" @endif>
-        /* Background kritis mencegah flash putih sebelum stylesheet utama siap. */
-        :root {
-            background-color: #f7f1f1;
-            color-scheme: light;
-        }
-        :root.dark {
-            background-color: #0f0d0e;
-            color-scheme: dark;
-        }
-        html, body { min-height: 100%; }
-        body.admin-shell {
-            margin: 0;
-            background-color: #f7f1f1;
-        }
-        :root.dark body.admin-shell { background-color: #0f0d0e; }
+    @unless (request()->header('X-Admin-Navigation') === 'partial')
+        <script nonce="{{ $cspNonce }}">
+            (function () {
+                try {
+                    var t = localStorage.getItem('theme');
+                    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        document.documentElement.classList.add('dark');
+                    }
+                } catch (e) {}
+            })();
+        </script>
+        <style @if (! empty($cspNonce)) nonce="{{ $cspNonce }}" @endif>
+            /* Background kritis mencegah flash putih sebelum stylesheet utama siap. */
+            :root {
+                background-color: #f7f1f1;
+                color-scheme: light;
+            }
+            :root.dark {
+                background-color: #0f0d0e;
+                color-scheme: dark;
+            }
+            html, body { min-height: 100%; }
+            body.admin-shell {
+                margin: 0;
+                background-color: #f7f1f1;
+            }
+            :root.dark body.admin-shell { background-color: #0f0d0e; }
 
-        :root { view-transition-name: none; }
-        ::view-transition-old(admin-content) {
-            animation: admin-content-out 120ms ease-out both;
-        }
-        ::view-transition-new(admin-content) {
-            animation: admin-content-in 220ms cubic-bezier(.22, 1, .36, 1) both;
-        }
-        ::view-transition-old(admin-title) {
-            animation: admin-title-out 100ms ease-out both;
-        }
-        ::view-transition-new(admin-title) {
-            animation: admin-title-in 180ms cubic-bezier(.22, 1, .36, 1) both;
-        }
-        @keyframes admin-content-out {
-            from, to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes admin-content-in {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes admin-title-out {
-            to { opacity: .65; transform: translateY(-2px); }
-        }
-        @keyframes admin-title-in {
-            from { opacity: 0; transform: translateY(3px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            ::view-transition-old(admin-content),
-            ::view-transition-new(admin-content),
-            ::view-transition-old(admin-title),
-            ::view-transition-new(admin-title) { animation: none; }
-        }
-    </style>
+            :root { view-transition-name: none; }
+            ::view-transition-old(admin-content) {
+                animation: admin-content-out 120ms ease-out both;
+            }
+            ::view-transition-new(admin-content) {
+                animation: admin-content-in 220ms cubic-bezier(.22, 1, .36, 1) both;
+            }
+            ::view-transition-old(admin-title) {
+                animation: admin-title-out 100ms ease-out both;
+            }
+            ::view-transition-new(admin-title) {
+                animation: admin-title-in 180ms cubic-bezier(.22, 1,.36, 1) both;
+            }
+            @keyframes admin-content-out {
+                from, to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes admin-content-in {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes admin-title-out {
+                to { opacity: .65; transform: translateY(-2px); }
+            }
+            @keyframes admin-title-in {
+                from { opacity: 0; transform: translateY(3px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                ::view-transition-old(admin-content),
+                ::view-transition-new(admin-content),
+                ::view-transition-old(admin-title),
+                ::view-transition-new(admin-title) { animation: none; }
+            }
+        </style>
+    @endunless
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body
     class="admin-shell min-h-screen font-sans antialiased"
-    x-data="{ menuOpen: false, deleteOpen: false, deleteAction: '', deleteName: '' }"
+    data-admin-canonical="{{ route('admin.login') }}"
+    x-data="adminShell"
     x-bind:class="{ 'admin-body-locked': menuOpen }"
     x-bind:data-admin-theme="$store.theme.dark ? 'dark' : 'light'"
-    x-effect="document.body.classList.toggle('admin-body-locked', menuOpen)"
-    @keydown.escape.window="menuOpen = false; deleteOpen = false"
-    @open-delete-modal.window="deleteAction = $event.detail.action; deleteName = $event.detail.name || 'data ini'; deleteOpen = true"
+    @keydown.escape.window="closeAll"
+    @open-delete-modal.window="openDelete"
 >
     <a href="#admin-main-content" class="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-semibold text-navy-900 shadow-lg focus:fixed focus:left-4 focus:top-4 focus:not-sr-only">
         Lewati ke konten utama
@@ -100,11 +102,13 @@
                 ]],
                 ['label' => 'Operasional Internal', 'description' => 'Data internal dan pelaporan.', 'items' => [
                     ['route' => 'admin.applications.index', 'label' => 'Data Pengajuan', 'active' => ['admin.applications.*'], 'icon' => 'M5 4h14v16H5V4Z', 'description' => 'Proses pengajuan.'],
+                    ['route' => 'admin.process-statuses.index', 'label' => 'Status Proses', 'active' => ['admin.process-statuses.*'], 'icon' => 'M5 7h14M5 12h14M5 17h9', 'description' => 'Master status pengajuan.'],
                     ['route' => 'admin.business-categories.index', 'label' => 'Kategori Bisnis', 'active' => ['admin.business-categories.*'], 'icon' => 'M4 6h16M4 12h16M4 18h10', 'description' => 'Master kategori.'],
                     ['route' => 'admin.reports.index', 'label' => 'Laporan', 'active' => ['admin.reports.*'], 'icon' => 'M4 19V9h4v10H4ZM10 19V5h4v14h-4Z', 'description' => 'Filter dan export.'],
                     ['route' => 'admin.analytics.index', 'label' => 'Analitik Pengunjung', 'active' => ['admin.analytics.*'], 'icon' => 'M4 19V9m5 10V5m5 14v-7m5 7V3M3 19h18', 'description' => 'Trafik dan perilaku.'],
                 ]],
                 ['label' => 'Pengaturan', 'description' => 'Konfigurasi teknis website.', 'items' => [
+                    ['route' => 'admin.shortcuts.index', 'label' => 'Shortcut', 'active' => ['admin.shortcuts.*'], 'icon' => 'M4 7h16M4 12h10M4 17h7M17 14v6m-3-3h6', 'description' => 'Find & replace konten.'],
                     ['route' => 'admin.seo.edit', 'label' => 'SEO Website', 'active' => ['admin.seo.*'], 'icon' => 'M10.5 18a7.5 7.5 0 1 1 5.3-12.8M16 16l5 5', 'description' => 'Metadata pencarian.'],
                     ['route' => 'admin.account.edit', 'label' => 'Akun Admin', 'active' => ['admin.account.*'], 'icon' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 21a7 7 0 0 1 14 0M16 7l2 2 3-3', 'description' => 'Email dan password.'],
                 ]],
@@ -117,7 +121,7 @@
             <div class="admin-topbar__inner">
                 <a href="{{ route('admin.dashboard') }}" class="admin-topbar__brand" aria-label="Beranda Admin">
                     <span class="admin-topbar__logo">
-                        <img src="{{ asset('images/logo-zzk.png') }}" alt="Logo PT Zam Zam Khan">
+                        <img src="{{ asset('images/logo-zzk.webp') }}" alt="Logo PT Zam Zam Khan" width="400" height="263" decoding="async" fetchpriority="high">
                     </span>
                     <span class="admin-topbar__brand-text">
                         <span>Admin PT Zam Zam Khan</span>
@@ -131,7 +135,7 @@
                     aria-controls="admin-drawer"
                     :aria-expanded="menuOpen.toString()"
                     :aria-label="menuOpen ? 'Tutup menu admin' : 'Buka menu admin'"
-                    @click="menuOpen = true; $nextTick(() => $refs.drawerClose?.focus())"
+                    @click="openMenu"
                 >
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
@@ -201,7 +205,7 @@
             <div class="admin-drawer__header">
                 <div class="admin-drawer__brand">
                     <span class="admin-drawer__logo">
-                        <img src="{{ asset('images/logo-zzk.png') }}" alt="Logo PT Zam Zam Khan">
+                        <img src="{{ asset('images/logo-zzk.webp') }}" alt="Logo PT Zam Zam Khan" width="400" height="263" loading="lazy" decoding="async">
                     </span>
                     <span class="min-w-0 flex-1">
                         <span class="admin-drawer__title">Admin PT Zam Zam Khan</span>

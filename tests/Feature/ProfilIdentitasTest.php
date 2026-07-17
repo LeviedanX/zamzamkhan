@@ -64,8 +64,8 @@ class ProfilIdentitasTest extends TestCase
 
     public function test_guest_tidak_bisa_membuka_atau_menyimpan_profil(): void
     {
-        $this->get(route('admin.settings.edit'))->assertRedirect(route('admin.login'));
-        $this->put(route('admin.settings.update'), $this->payload())->assertRedirect(route('admin.login'));
+        $this->get(route('admin.settings.edit'))->assertNotFound();
+        $this->put(route('admin.settings.update'), $this->payload())->assertNotFound();
 
         $this->assertDatabaseCount('site_settings', 0);
     }

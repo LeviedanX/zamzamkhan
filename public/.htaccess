@@ -5,6 +5,15 @@
 
     RewriteEngine On
 
+    # Folder upload publik hanya boleh menyajikan gambar raster yang didukung.
+    # File aktif, HTML, SVG, dotfile, atau ekstensi ganda ditolak sebelum Laravel.
+    RewriteCond %{REQUEST_URI} ^/storage/ [NC]
+    RewriteCond %{REQUEST_URI} !\.(?:jpe?g|png|webp)$ [NC]
+    RewriteRule ^ - [F,L]
+
+    RewriteCond %{REQUEST_URI} ^/storage/.*(?:\.php|\.phtml|\.phar|\.cgi|\.pl|\.py|\.sh|\.html?|\.svg)(?:\.|$) [NC]
+    RewriteRule ^ - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -22,4 +31,8 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
 </IfModule>

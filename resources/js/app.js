@@ -1,7 +1,39 @@
-import Alpine from 'alpinejs';
+import Alpine from '@alpinejs/csp';
 import collapse from '@alpinejs/collapse';
 
 Alpine.plugin(collapse);
+
+// Navigasi section tetap bekerja, tetapi fragment publik tidak dibiarkan
+// memenuhi address bar. Hash diperlakukan sebagai input tidak tepercaya dan
+// hanya dipakai untuk mencari ID section yang benar-benar ada di homepage.
+const initPublicSectionNavigation = () => {
+    if (!document.body.classList.contains('public-home')) return;
+
+    const cleanLocation = () => `${window.location.pathname}${window.location.search}`;
+    const sectionFromHash = (hash) => {
+        if (!hash?.startsWith('#') || hash.length < 2) return null;
+
+        try {
+            const id = decodeURIComponent(hash.slice(1));
+            const target = document.getElementById(id);
+
+            return target?.matches('main section[id]') ? target : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const initialTarget = sectionFromHash(window.location.hash);
+    if (initialTarget) {
+        requestAnimationFrame(() => {
+            initialTarget.scrollIntoView({ block: 'start' });
+            window.history.replaceState(window.history.state, '', cleanLocation());
+        });
+    }
+
+};
+
+initPublicSectionNavigation();
 
 // Focus trap generik untuk seluruh dialog Alpine. Menjaga Tab tetap di dalam
 // dialog dan mengembalikan fokus ke trigger setelah dialog ditutup.
@@ -186,6 +218,9 @@ Alpine.data('whatsappLeadForm', (cfg = {}) => ({
     },
     errors: {},
     formError: '',
+    get needsCount() {
+        return `${this.values.needs.length}/280`;
+    },
     // Daftar kata kasar/terlarang multibahasa untuk moderasi input.
     // Deteksi juga menoleransi typo/plesetan lewat kunci fonetik (_confusable).
     bannedWords: [
@@ -232,6 +267,12 @@ Alpine.data('whatsappLeadForm', (cfg = {}) => ({
     ],
     _bannedCanon: null,
     init() {
+        const config = JSON.parse(this.$el.dataset.config || '{}');
+        this.inline = Boolean(config.inline ?? this.inline);
+        this.mode = this.inline ? 'inline' : 'undecided';
+        this.waNumber = config.waNumber || this.waNumber;
+        this.services = Array.isArray(config.services) ? config.services : this.services;
+
         // Form di section Kontak selalu tampil dan tidak menangani trigger modal global.
         if (this.inline) {
             this._bannedCanon = new Set(
@@ -551,6 +592,219 @@ Alpine.data('testimonialSlider', () => ({
     onPrev() { this.prev(); this.userInteract(); },
     onNext() { this.next(); this.userInteract(); },
     onDot(i) { this.goTo(i); this.userInteract(); },
+    get currentLabel() { return String(this.index + 1).padStart(2, '0'); },
+    get totalLabel() { return String(this.stops).padStart(2, '0'); },
+    get progressStyle() { return { width: `${((this.index + 1) / this.stops) * 100}%` }; },
+    dotLabel(i) { return `Ke dokumentasi ${i}`; },
+}));
+
+Alpine.data('adminShell', () => ({
+    menuOpen: false,
+    deleteOpen: false,
+    deleteAction: '',
+    deleteName: '',
+    init() {
+        this.$watch('menuOpen', (open) => {
+            document.body.classList.toggle('admin-body-locked', open);
+        });
+    },
+    openMenu() {
+        this.menuOpen = true;
+        this.$nextTick(() => this.$refs.drawerClose?.focus());
+    },
+    closeAll() {
+        this.menuOpen = false;
+        this.deleteOpen = false;
+    },
+    openDelete(event) {
+        this.deleteAction = event.detail.action;
+        this.deleteName = event.detail.name || 'data ini';
+        this.deleteOpen = true;
+    },
+}));
+
+Alpine.data('heroParallax', () => ({
+    y: 0,
+    updateParallax() {
+        this.y = window.scrollY;
+    },
+    get backgroundStyle() {
+        return { transform: `scale(1.08) translateY(${this.y * 0.05}px)` };
+    },
+}));
+
+Alpine.data('serviceModal', () => ({
+    open: false,
+    svc: { title: '', long: '', cocok: '', benefits: [], alur: [], waMessage: '' },
+    init() {
+        this.$watch('open', (open) => {
+            document.body.classList.toggle('overflow-hidden', open);
+        });
+    },
+    openService(event) {
+        this.svc = JSON.parse(event.currentTarget.dataset.service || '{}');
+        this.open = true;
+    },
+    closeService() {
+        this.open = false;
+    },
+    consultService() {
+        this.$dispatch('open-whatsapp-lead', {
+            mode: 'service',
+            service: this.svc.title,
+            needs: this.svc.waMessage || '',
+        });
+        this.closeService();
+    },
+}));
+
+Alpine.data('siteSettingsForm', () => ({
+        companyName: '',
+        tagline: '',
+        description: '',
+        vision: '',
+        missionItems: [],
+        phone: '',
+        whatsapp: '',
+        email: '',
+        address: '',
+        operatingHours: '',
+        socialItems: [],
+        missionDraft: '',
+        socialDraft: { label: '', url: '' },
+        init() {
+            Object.assign(this, JSON.parse(this.$el.dataset.config || '{}'));
+        },
+        missionPayload() {
+            return this.missionItems.map((item) => (item || '').trim()).filter(Boolean).join('\n');
+        },
+        get missionCountLabel() {
+            return `${this.missionItems.filter((item) => (item || '').trim()).length} poin`;
+        },
+        missionLabel(index) {
+            return `Misi ${index + 1}`;
+        },
+        addMission() {
+            const value = this.missionDraft.trim();
+            if (!value) return;
+            this.missionItems.push(value);
+            this.missionDraft = '';
+        },
+        removeMission(index) {
+            this.missionItems.splice(index, 1);
+        },
+        cleanSocials() {
+            return this.socialItems
+                .map((item) => ({ label: (item.label || '').trim(), url: (item.url || '').trim() }))
+                .filter((item) => item.label && item.url);
+        },
+        get socialCountLabel() {
+            return `${this.cleanSocials().length} akun`;
+        },
+        socialLabelName(index) {
+            return `social_links[${index}][label]`;
+        },
+        socialUrlName(index) {
+            return `social_links[${index}][url]`;
+        },
+        addSocial() {
+            const label = this.socialDraft.label.trim();
+            const url = this.socialDraft.url.trim();
+            if (!label || !url) return;
+            this.socialItems.push({ label, url });
+            this.socialDraft = { label: '', url: '' };
+        },
+        removeSocial(index) {
+            this.socialItems.splice(index, 1);
+        },
+}));
+
+Alpine.data('heroEditor', () => ({
+        chips: [],
+        defaultChips: [],
+        chipDraft: '',
+        init() {
+            Object.assign(this, JSON.parse(this.$el.dataset.config || '{}'));
+        },
+        normalizedChips() {
+            return this.chips.map((chip) => (chip || '').trim()).filter(Boolean);
+        },
+        chipPayload() {
+            return this.normalizedChips().join('\n');
+        },
+        get chipCountLabel() {
+            return `${this.normalizedChips().length} chip`;
+        },
+        chipLabel(index) {
+            return `Chip layanan ${index + 1}`;
+        },
+        addChip() {
+            const value = this.chipDraft.trim();
+            if (!value) return;
+            this.chips.push(value);
+            this.chipDraft = '';
+        },
+        removeChip(index) {
+            this.chips.splice(index, 1);
+        },
+}));
+
+Alpine.data('serviceEditor', () => {
+    const cleanList = (items) => items.map((item) => (item || '').trim()).filter(Boolean);
+
+    return {
+        title: '',
+        icon: 'halal',
+        summary: '',
+        description: '',
+        suitableFor: '',
+        whatsappMessage: '',
+        benefits: [],
+        workflowSteps: [],
+        isActive: true,
+        isFeatured: false,
+        benefitDraft: '',
+        workflowDraft: '',
+        iconOptions: ['halal', 'halal-reg', 'nib', 'akta', 'pajak', 'bpom', 'haki', 'desain'],
+        init() {
+            Object.assign(this, JSON.parse(this.$el.dataset.config || '{}'));
+        },
+        benefitPayload() { return cleanList(this.benefits).join('\n'); },
+        workflowPayload() { return cleanList(this.workflowSteps).join('\n'); },
+        get benefitCountLabel() { return `${cleanList(this.benefits).length} poin`; },
+        get workflowCountLabel() { return `${cleanList(this.workflowSteps).length} tahap`; },
+        benefitLabel(index) { return `Manfaat ${index + 1}`; },
+        workflowLabel(index) { return `Alur ${index + 1}`; },
+        addBenefit() {
+            const value = this.benefitDraft.trim();
+            if (!value) return;
+            this.benefits.push(value);
+            this.benefitDraft = '';
+        },
+        removeBenefit(index) { this.benefits.splice(index, 1); },
+        addWorkflow() {
+            const value = this.workflowDraft.trim();
+            if (!value) return;
+            this.workflowSteps.push(value);
+            this.workflowDraft = '';
+        },
+        removeWorkflow(index) { this.workflowSteps.splice(index, 1); },
+    };
+});
+
+Alpine.data('faqAccordion', () => ({ active: 0 }));
+Alpine.data('agendaSchedule', () => ({
+    startsAt: '',
+    min: '',
+    init() {
+        Object.assign(this, JSON.parse(this.$el.dataset.config || '{}'));
+    },
+}));
+Alpine.data('advantageIcon', () => ({
+    icon: '',
+    init() {
+        Object.assign(this, JSON.parse(this.$el.dataset.config || '{}'));
+    },
 }));
 
 window.Alpine = Alpine;
@@ -563,6 +817,10 @@ const destroyAnalyticsCharts = () => {
     analyticsCharts.forEach((chart) => chart.destroy());
     analyticsCharts = [];
 };
+
+document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-print-report]')) window.print();
+});
 
 // Chart.js weighs ~200 KB and only the admin analytics page draws anything, so
 // it is fetched on demand rather than shipped to every visitor of the homepage.
@@ -783,14 +1041,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const hash = a.getAttribute('href');
         if (!hash || hash.length < 2) return;
         a.addEventListener('click', (e) => {
-            const target = document.querySelector(hash);
+            let target;
+            try {
+                target = document.getElementById(decodeURIComponent(hash.slice(1)));
+            } catch {
+                return;
+            }
             if (!target) return;
             e.preventDefault();
             const offset = (header ? header.offsetHeight : 80) + 14;
             const top = target.getBoundingClientRect().top + window.scrollY - offset;
             if (reduce) window.scrollTo(0, top);
             else scrollToY(top);
-            history.pushState(null, '', hash);
+            history.replaceState(history.state, '', `${location.pathname}${location.search}`);
         });
     });
 });
@@ -871,6 +1134,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const shell = document.querySelector('.admin-shell');
     if (!shell) return;
 
+    let canonicalAdminUrl;
+    try {
+        canonicalAdminUrl = new URL(shell.dataset.adminCanonical, location.href);
+    } catch {
+        return;
+    }
+    if (canonicalAdminUrl.origin !== location.origin) return;
+
+    const canonicalAdminPath = canonicalAdminUrl.pathname;
+    const adminBasePath = canonicalAdminPath.replace(/\/$/, '');
+    const normalizeAdminRoute = (value) => {
+        try {
+            const url = new URL(value, location.origin);
+            if (url.origin !== location.origin
+                || (url.pathname !== adminBasePath && !url.pathname.startsWith(`${adminBasePath}/`))) return null;
+
+            return url.href;
+        } catch {
+            return null;
+        }
+    };
+    const currentAdminRoute = () => normalizeAdminRoute(history.state?.adminRouteUrl)
+        || normalizeAdminRoute(location.href);
+
+    const initialAdminRoute = currentAdminRoute();
+    if (!initialAdminRoute) return;
+    history.replaceState(
+        { adminNavigation: true, adminRouteUrl: initialAdminRoute },
+        '',
+        canonicalAdminPath,
+    );
+
     const pageCache = new Map();
     const CACHE_MS = 5 * 60_000;
     let navigationId = 0;
@@ -880,8 +1175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         && a.target !== '_blank'
         && !a.hasAttribute('download')
         && !a.hasAttribute('data-no-prefetch')
-        && a.origin === location.origin
-        && a.pathname.startsWith('/admin')
+        && normalizeAdminRoute(a.href)
+        && a.pathname !== canonicalAdminPath
         && !/\/admin\/logout/.test(a.pathname)
         && !a.getAttribute('href').startsWith('#');
 
@@ -912,26 +1207,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return promise;
     };
 
-    const warmModule = (selector) => {
-        const a = document.querySelector(selector);
-        if (isInternalGet(a) && a.href !== location.href) fetchPage(a.href).catch(() => {});
-    };
-
-    const warmAdjacentModules = () => {
-        // Tujuan berikutnya dipanaskan segera karena merupakan aksi utama workflow edit.
-        warmModule('.admin-module-nav__item--next[data-admin-prefetch]');
-
-        // Tujuan sebelumnya tetap low-priority agar tidak bersaing dengan render awal.
-        const warmPrevious = () => warmModule('.admin-module-nav__item--prev[data-admin-prefetch]');
-        if ('requestIdleCallback' in window) window.requestIdleCallback(warmPrevious, { timeout: 1200 });
-        else window.setTimeout(warmPrevious, 350);
-    };
-
-    warmAdjacentModules();
-
+    // Prefetch hanya dijalankan setelah ada intent pengguna (hover, fokus, atau
+    // sentuhan), sehingga request modul lain tidak bersaing dengan paint awal.
     const warmFromEvent = (event) => {
         const a = event.target.closest && event.target.closest('a');
-        if (isInternalGet(a) && a.href !== location.href) fetchPage(a.href).catch(() => {});
+        if (isInternalGet(a) && a.href !== currentAdminRoute()) fetchPage(a.href).catch(() => {});
     };
     document.addEventListener('pointerover', warmFromEvent, { passive: true });
     document.addEventListener('focusin', warmFromEvent);
@@ -945,7 +1225,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncPersistentShell = (nextDocument) => {
         const nextTitle = nextDocument.querySelector('.admin-topbar__center');
         const currentTitle = document.querySelector('.admin-topbar__center');
-        if (nextTitle && currentTitle) currentTitle.innerHTML = nextTitle.innerHTML;
+        if (nextTitle && currentTitle) {
+            currentTitle.replaceChildren(
+                ...Array.from(nextTitle.childNodes, (node) => document.importNode(node, true))
+            );
+        }
 
         const currentLinks = [...document.querySelectorAll('.admin-drawer__link')];
         const nextLinks = [...nextDocument.querySelectorAll('.admin-drawer__link')];
@@ -963,21 +1247,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextMain = nextDocument.querySelector('main.admin-content');
         if (!currentMain || !nextMain) throw new Error('Admin content container not found.');
 
+        const adminRouteUrl = normalizeAdminRoute(url);
+        if (!adminRouteUrl) throw new Error('Invalid admin navigation URL.');
+
         const update = () => {
             destroyAnalyticsCharts();
             if (window.Alpine && Alpine.mutateDom) {
                 Alpine.mutateDom(() => {
                     if (Alpine.destroyTree) Alpine.destroyTree(currentMain);
-                    currentMain.innerHTML = nextMain.innerHTML;
+                    currentMain.replaceChildren(
+                        ...Array.from(nextMain.childNodes, (node) => document.importNode(node, true))
+                    );
                 });
                 Alpine.initTree(currentMain);
             } else {
-                currentMain.innerHTML = nextMain.innerHTML;
+                currentMain.replaceChildren(
+                    ...Array.from(nextMain.childNodes, (node) => document.importNode(node, true))
+                );
             }
 
             document.title = nextDocument.title;
             syncPersistentShell(nextDocument);
-            if (push) history.pushState({ adminNavigation: true }, '', url);
+            const state = { adminNavigation: true, adminRouteUrl };
+            if (push) history.pushState(state, '', canonicalAdminPath);
+            else history.replaceState(state, '', canonicalAdminPath);
             window.scrollTo({ top: 0, behavior: 'auto' });
             clearNavigating();
             initVisitorAnalytics().catch(() => {});
@@ -987,11 +1280,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const transition = document.startViewTransition(update);
             transition.finished.finally(() => {
                 clearNavigating();
-                warmAdjacentModules();
             });
         } else {
             update();
-            warmAdjacentModules();
         }
     };
 
@@ -1004,13 +1295,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const page = await fetchPage(url);
             if (currentNavigation !== navigationId) return;
-            if (!new URL(page.responseUrl).pathname.startsWith('/admin') || new URL(page.responseUrl).pathname === '/admin/login') {
-                location.assign(page.responseUrl);
+            const responseUrl = normalizeAdminRoute(page.responseUrl);
+            if (!responseUrl || new URL(responseUrl).pathname === canonicalAdminPath) {
+                location.assign(canonicalAdminPath);
                 return;
             }
 
             const nextDocument = new DOMParser().parseFromString(page.html, 'text/html');
-            replaceMain(nextDocument, page.responseUrl, push);
+            replaceMain(nextDocument, responseUrl, push);
         } catch (error) {
             location.assign(url);
         }
@@ -1019,13 +1311,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const a = event.target.closest && event.target.closest('a');
-        if (!isInternalGet(a) || a.href === location.href) return;
+        if (!isInternalGet(a) || a.href === currentAdminRoute()) return;
 
         event.preventDefault();
         navigate(a.href);
     }, true);
 
-    window.addEventListener('popstate', () => navigate(location.href, false));
+    window.addEventListener('popstate', (event) => {
+        const routeUrl = normalizeAdminRoute(event.state?.adminRouteUrl);
+        if (routeUrl) navigate(routeUrl, false);
+        else location.assign(canonicalAdminPath);
+    });
 
     window.addEventListener('pageshow', clearNavigating);
 })();

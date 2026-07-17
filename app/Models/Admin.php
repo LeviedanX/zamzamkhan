@@ -9,7 +9,7 @@ class Admin extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'is_active', 'last_login_at'];
+    protected $fillable = ['name', 'email', 'password', 'is_active', 'auth_version', 'last_login_at'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -18,6 +18,7 @@ class Admin extends Authenticatable
         return [
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'auth_version' => 'integer',
             'last_login_at' => 'datetime',
         ];
     }

@@ -3,6 +3,7 @@
 @section('title', 'SEO Website')
 
 @php($inp = 'w-full rounded-xl border border-navy-200 bg-white/95 px-4 py-3 text-sm text-navy-900 shadow-sm shadow-navy-900/5 focus:border-emerald-brand focus:outline-none focus:ring-2 focus:ring-emerald-brand/20')
+@php($seoOgImageUrl = \App\Support\PublicMedia::previewUrl($seo->og_image_path))
 
 @section('content')
 <div class="mb-6">
@@ -56,6 +57,12 @@
                 </div>
                 <div>
                     <label class="mb-1.5 block text-sm font-semibold text-navy-800">OG Image (opsional)</label>
+                    @if ($seoOgImageUrl)
+                        <div class="mb-2">
+                            <p class="mb-1 text-xs font-semibold text-navy-500">Gambar saat ini:</p>
+                            <img src="{{ $seoOgImageUrl }}" alt="OG image saat ini" class="aspect-video w-full max-w-xs rounded-xl border border-navy-100 object-cover">
+                        </div>
+                    @endif
                     <input name="og_image" type="file" accept="image/jpeg,image/png,image/webp" class="{{ $inp }}">
                     <p class="mt-1 text-xs text-navy-400">JPG/PNG/WEBP, maksimal 2 MB.</p>
                     @if ($seo->og_image_path)

@@ -26,8 +26,8 @@
             <span>Status proses</span>
             <select name="process_status">
                 <option value="">Semua status</option>
-                @foreach (\App\Models\BusinessApplication::STATUSES as $status)
-                    <option value="{{ $status }}" @selected(($filters['process_status'] ?? '') === $status)>{{ $status }}</option>
+                @foreach ($statuses as $status)
+                    <option value="{{ $status->name }}" @selected(($filters['process_status'] ?? '') === $status->name)>{{ $status->name }}{{ $status->is_active ? '' : ' (nonaktif)' }}</option>
                 @endforeach
             </select>
         </label>

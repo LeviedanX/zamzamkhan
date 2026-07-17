@@ -29,12 +29,13 @@
     ])
 @else
     <div class="admin-table-card admin-table-card--responsive overflow-x-auto">
-        <table class="admin-responsive-table w-full min-w-[720px] text-left text-sm">
+        <table class="admin-responsive-table w-full min-w-[800px] text-left text-sm">
             <thead>
                 <tr class="border-b border-navy-100 text-xs uppercase tracking-wide text-navy-400">
                     <th class="px-4 py-3 font-semibold">Artikel</th>
                     <th class="px-4 py-3 font-semibold">Kategori</th>
                     <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">SEO</th>
                     <th class="px-4 py-3 font-semibold">Publikasi</th>
                     <th class="px-4 py-3 font-semibold">Diperbarui</th>
                     <th class="px-4 py-3 text-right font-semibold">Aksi</th>
@@ -64,6 +65,15 @@
                                 <span class="admin-status-badge admin-status-badge--active"><span></span>Terbit</span>
                             @else
                                 <span class="admin-status-badge admin-status-badge--inactive"><span></span>Draft</span>
+                            @endif
+                        </td>
+                        <td data-label="SEO" class="px-4 py-3">
+                            @if (! $a->isIndexable())
+                                <span class="admin-status-badge admin-status-badge--inactive"><span></span>Noindex</span>
+                            @elseif (filled($a->meta_title) && filled($a->meta_description))
+                                <span class="admin-status-badge admin-status-badge--active"><span></span>Lengkap</span>
+                            @else
+                                <span class="text-xs font-semibold text-amber-700">Menggunakan fallback</span>
                             @endif
                         </td>
                         <td data-label="Publikasi" class="px-4 py-3 text-navy-600">{{ $a->published_at?->translatedFormat('d M Y') ?? '-' }}</td>

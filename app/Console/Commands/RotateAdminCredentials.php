@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Admin;
+use App\Support\AdminSecurity;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
 
 class RotateAdminCredentials extends Command
 {
@@ -30,7 +30,7 @@ class RotateAdminCredentials extends Command
         $validator = Validator::make(compact('email', 'name', 'password', 'confirmation'), [
             'email' => ['required', 'email:rfc', 'max:160', 'ends_with:@gmail.com', 'unique:admins,email,'.($existing?->id ?? 'NULL')],
             'name' => ['required', 'string', 'max:120'],
-            'password' => ['required', Password::min(10)->mixedCase()->numbers(), 'same:confirmation'],
+            'password' => ['required', AdminSecurity::passwordRule(), 'same:confirmation'],
         ]);
 
         if ($validator->fails()) {
@@ -48,6 +48,7 @@ class RotateAdminCredentials extends Command
                 'name' => $name,
                 'password' => $password,
                 'is_active' => true,
+                'auth_version' => max(1, (int) $admin->auth_version) + 1,
             ]);
             $admin->setRememberToken(Str::random(60));
             $admin->save();

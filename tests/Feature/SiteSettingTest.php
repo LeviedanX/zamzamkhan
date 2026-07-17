@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\RequireAdminLoginEntry;
 use App\Models\Admin;
 use App\Models\Article;
 use App\Models\ArticleCategory;
@@ -25,19 +26,26 @@ class SiteSettingTest extends TestCase
         ]);
     }
 
+    private function openAdminLogin(): void
+    {
+        $this->post(route('admin.access'))
+            ->assertRedirect(route('admin.login'));
+    }
+
     public function test_guest_tidak_bisa_membuka_pengaturan(): void
     {
-        $this->get(route('admin.settings.edit'))->assertRedirect();
+        $this->get(route('admin.settings.edit'))->assertNotFound();
     }
 
     public function test_guest_tidak_bisa_membuka_dashboard(): void
     {
-        $this->get(route('admin.dashboard'))->assertRedirect();
+        $this->get(route('admin.dashboard'))->assertNotFound();
     }
 
     public function test_admin_aktif_bisa_login(): void
     {
         $this->admin();
+        $this->openAdminLogin();
 
         $this->post(route('admin.login.attempt'), [
             'email' => 'admin@uji.test',
@@ -49,12 +57,14 @@ class SiteSettingTest extends TestCase
 
     public function test_login_admin_tidak_menyediakan_persistent_session(): void
     {
+        $this->openAdminLogin();
         $this->get(route('admin.login'))
             ->assertOk()
             ->assertDontSee('Ingat sesi saya')
             ->assertDontSee('name="remember"', false);
 
         $this->admin();
+        $this->openAdminLogin();
 
         $response = $this->post(route('admin.login.attempt'), [
             'email' => 'admin@uji.test',
@@ -68,6 +78,7 @@ class SiteSettingTest extends TestCase
     public function test_admin_nonaktif_ditolak(): void
     {
         $this->admin(active: false);
+        $this->openAdminLogin();
 
         $this->from(route('admin.login'))
             ->post(route('admin.login.attempt'), [
@@ -82,6 +93,7 @@ class SiteSettingTest extends TestCase
     public function test_login_admin_dibatasi_setelah_lima_kegagalan(): void
     {
         $this->admin();
+        $this->openAdminLogin();
         $payload = ['email' => 'admin@uji.test', 'password' => 'salah'];
 
         for ($attempt = 1; $attempt <= 5; $attempt++) {
@@ -96,6 +108,59 @@ class SiteSettingTest extends TestCase
             ->assertSessionHasErrors('email');
 
         $this->assertGuest('admin');
+    }
+
+    public function test_login_admin_mengarahkan_pengunjung_ke_homepage_tanpa_entry_dari_tombol(): void
+    {
+        $this->get(route('admin.login'))->assertRedirect(route('home'));
+        $this->get('/admin/login')->assertNotFound();
+        $this->post(route('admin.login.attempt'))->assertRedirect(route('home'));
+
+        $this->assertSame(url('/admin'), route('admin.login'));
+        $this->assertSame(url('/admin'), route('admin.login.attempt'));
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('method="POST" action="'.route('admin.access').'"', false)
+            ->assertDontSee('href="'.route('admin.login').'"', false);
+    }
+
+    public function test_entry_login_hanya_berlaku_untuk_satu_handoff_dari_tombol_resmi(): void
+    {
+        $this->post(route('admin.access'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.login'))->assertOk();
+
+        $response = $this->get(route('admin.login'))->assertRedirect(route('home'));
+
+        $response->assertSessionMissing(RequireAdminLoginEntry::SESSION_KEY);
+        $response->assertSessionMissing(RequireAdminLoginEntry::HANDOFF_KEY);
+    }
+
+    public function test_login_gagal_tetap_bisa_kembali_ke_form_dengan_pesan_error(): void
+    {
+        $this->admin();
+        $this->post(route('admin.access'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.login'))->assertOk();
+
+        $this->from(route('admin.login'))
+            ->post(route('admin.login.attempt'), [
+                'email' => 'admin@uji.test',
+                'password' => 'salah',
+            ])->assertRedirect(route('admin.login'));
+
+        $this->get(route('admin.login'))
+            ->assertOk()
+            ->assertSee('Email atau kata sandi salah, atau akun tidak aktif.');
+    }
+
+    public function test_entry_login_admin_kedaluwarsa_setelah_batas_waktu(): void
+    {
+        $response = $this->withSession([
+            RequireAdminLoginEntry::SESSION_KEY => now()->subSecond()->timestamp,
+        ])->get(route('admin.login'))->assertRedirect(route('home'));
+
+        $response->assertSessionMissing(RequireAdminLoginEntry::SESSION_KEY);
+        $response->assertSessionMissing(RequireAdminLoginEntry::HANDOFF_KEY);
     }
 
     public function test_homepage_tetap_tampil_tanpa_site_setting(): void

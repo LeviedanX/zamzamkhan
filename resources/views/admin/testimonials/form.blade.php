@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 @section('title', $testimonial->exists ? 'Edit Testimoni' : 'Tambah Testimoni')
 
+@php
+    $testimonialImageUrl = $testimonial->exists ? \App\Support\PublicMedia::previewUrl($testimonial->image_path) : null;
+@endphp
+
 @section('content')
 <x-admin.page-header
     eyebrow="Konten Website"
@@ -35,6 +39,10 @@
             <div class="admin-form-grid admin-form-grid--2">
                 <label class="admin-field">
                     <span>Dokumentasi {{ $testimonial->exists ? '(opsional)' : '*' }}</span>
+                    @if ($testimonialImageUrl)
+                        <span class="mb-1 text-xs font-semibold text-navy-500">Gambar saat ini:</span>
+                        <img src="{{ $testimonialImageUrl }}" alt="Dokumentasi {{ $testimonial->client_name }} saat ini" class="mb-1 h-20 w-28 rounded-xl border border-navy-100 object-cover">
+                    @endif
                     <input type="file" name="image" accept="image/jpeg,image/png,image/webp" @required(!$testimonial->exists)>
                     <small>JPG, PNG, atau WEBP maksimal 4 MB.</small>
                 </label>

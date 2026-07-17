@@ -36,22 +36,24 @@ class SecurityHeaders
         }
 
         if (config('security.csp_enabled')) {
+            [$viteHttpSource, $viteWebSocketSource] = $this->localViteSources();
+            $viteAssetSource = $viteHttpSource ? ' '.$viteHttpSource : '';
+            $localDataConnectSource = app()->environment('local') ? ' data:' : '';
+            $viteConnectSources = $viteHttpSource
+                ? ' '.$viteHttpSource.' '.$viteWebSocketSource
+                : '';
+
             $directives = [
                 "default-src 'self'",
                 "base-uri 'self'",
                 "object-src 'none'",
                 "frame-ancestors 'none'",
                 "form-action 'self'",
-                // 'unsafe-eval' masih diperlukan Alpine.js: ekspresi seperti
-                // x-data / :class dievaluasi lewat new Function(). Menghapusnya
-                // menuntut migrasi ke build @alpinejs/csp dan penulisan ulang
-                // ~129 ekspresi inline di seluruh Blade. Tidak ada 'unsafe-inline'
-                // di script-src, jadi skrip yang disuntikkan tetap tertolak.
-                "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'",
+                "script-src 'self' 'nonce-{$nonce}'",
                 "style-src 'self' 'nonce-{$nonce}'",
-                "img-src 'self' data: blob: https:",
-                "font-src 'self' data:",
-                "connect-src 'self'",
+                "img-src 'self' data: blob: https:{$viteAssetSource}",
+                "font-src 'self' data:{$viteAssetSource}",
+                "connect-src 'self'{$localDataConnectSource}{$viteConnectSources}",
                 'frame-src https://www.google.com https://maps.google.com https://www.google.co.id',
                 "media-src 'self'",
                 "worker-src 'self' blob:",
@@ -73,5 +75,41 @@ class SecurityHeaders
         }
 
         return $response;
+    }
+
+    /**
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function localViteSources(): array
+    {
+        if (! app()->environment('local') || ! Vite::isRunningHot()) {
+            return [null, null];
+        }
+
+        $hotUrl = trim((string) @file_get_contents(Vite::hotFile()));
+        $parts = parse_url($hotUrl);
+
+        if (! is_array($parts)) {
+            return [null, null];
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host = strtolower(trim((string) ($parts['host'] ?? ''), '[]'));
+        $port = isset($parts['port']) ? (int) $parts['port'] : null;
+
+        if (! in_array($scheme, ['http', 'https'], true)
+            || ! in_array($host, ['127.0.0.1', 'localhost', '::1'], true)
+            || $port === null
+            || $port < 1
+            || $port > 65535) {
+            return [null, null];
+        }
+
+        $cspHost = $host === '::1' ? '[::1]' : $host;
+        $httpSource = sprintf('%s://%s:%d', $scheme, $cspHost, $port);
+        $webSocketScheme = $scheme === 'https' ? 'wss' : 'ws';
+        $webSocketSource = sprintf('%s://%s:%d', $webSocketScheme, $cspHost, $port);
+
+        return [$httpSource, $webSocketSource];
     }
 }

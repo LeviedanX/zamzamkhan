@@ -74,10 +74,13 @@ class HeroMediaUploadTest extends TestCase
 
         // Keduanya harus benar-benar dirender homepage lewat URL /storage/...
         $this->refreshPublicSiteConfig();
-        $this->get(route('home'))
+        $response = $this->get(route('home'))
             ->assertOk()
             ->assertSee('storage/'.$hero->image_path, false)
-            ->assertSee('storage/'.$hero->portrait_path, false);
+            ->assertSee('storage/'.$hero->portrait_path, false)
+            ->assertDontSee('images/bg1-hq.webp', false);
+
+        $this->assertSame(1, substr_count($response->getContent(), 'storage/'.$hero->image_path));
     }
 
     public function test_upload_baru_mengganti_file_lama(): void
@@ -139,6 +142,6 @@ class HeroMediaUploadTest extends TestCase
         $this->refreshPublicSiteConfig();
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('images/buzamzami.png', false);
+            ->assertSee('images/buzamzami.webp', false);
     }
 }

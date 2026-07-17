@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Login hanya dibuka sebentar setelah tombol admin di homepage dikirim.
+    'login_entry_ttl_seconds' => 600,
+    'session_idle_seconds' => (int) env('ADMIN_SESSION_IDLE_SECONDS', 1800),
+    'session_absolute_seconds' => (int) env('ADMIN_SESSION_ABSOLUTE_SECONDS', 28800),
+    'block_gambling_content' => env('ADMIN_BLOCK_GAMBLING_CONTENT', true),
     'seed' => [
         'name' => env('ADMIN_NAME', 'Administrator PT Zam Zam Khan'),
         'email' => env('ADMIN_EMAIL'),

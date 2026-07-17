@@ -17,6 +17,7 @@
 
     if ($activeCategory) {
         $pageTitle = $activeCategory->name.' — Artikel & Insight | PT Zam Zam Khan';
+        $pageDesc = 'Artikel dan insight kategori '.$activeCategory->name.' untuk membantu pelaku usaha mengelola legalitas, kepatuhan, dan pertumbuhan bisnis.';
     }
     if ($currentPage > 1) {
         $pageTitle = 'Halaman '.$currentPage.' — '.$pageTitle;
@@ -24,7 +25,10 @@
 
     // Hasil pencarian bersifat tipis dan tak terbatas jumlahnya; jangan diindeks,
     // tapi tetap biarkan crawler mengikuti tautan artikelnya.
-    $pageRobots = $q !== '' ? 'noindex, follow' : 'index, follow';
+    $invalidCategory = request()->filled('kategori') && ! $activeCategory;
+    $pageRobots = ($q !== '' || $invalidCategory)
+        ? 'noindex, follow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 @endphp
 
 @section('title', $pageTitle)
@@ -34,6 +38,51 @@
 @section('ogUrl', $canonicalUrl)
 @section('ogTitle', $pageTitle)
 @section('ogDescription', $pageDesc)
+
+@section('jsonld')
+    @php
+        $listItems = $articles->values()->map(fn ($article, $index) => [
+            '@type' => 'ListItem',
+            'position' => ($articles->firstItem() ?? 1) + $index,
+            'name' => $article->title,
+            'url' => route('artikel.show', $article->slug),
+        ])->all();
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'CollectionPage',
+                    '@id' => $canonicalUrl.'#webpage',
+                    'url' => $canonicalUrl,
+                    'name' => $pageTitle,
+                    'description' => $pageDesc,
+                    'breadcrumb' => ['@id' => $canonicalUrl.'#breadcrumb'],
+                    'mainEntity' => ['@id' => $canonicalUrl.'#articles'],
+                ],
+                [
+                    '@type' => 'ItemList',
+                    '@id' => $canonicalUrl.'#articles',
+                    'numberOfItems' => $articles->count(),
+                    'itemListElement' => $listItems,
+                ],
+                [
+                    '@type' => 'BreadcrumbList',
+                    '@id' => $canonicalUrl.'#breadcrumb',
+                    'itemListElement' => array_values(array_filter([
+                        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Beranda', 'item' => route('home')],
+                        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Artikel', 'item' => route('artikel.index')],
+                        $activeCategory ? ['@type' => 'ListItem', 'position' => 3, 'name' => $activeCategory->name, 'item' => $canonicalUrl] : null,
+                    ])),
+                ],
+            ],
+        ];
+        $jsonFlags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+    @endphp
+    <script type="application/ld+json" nonce="{{ $cspNonce }}">
+{!! json_encode($jsonLd, $jsonFlags) !!}
+    </script>
+@endsection
 
 @section('content')
     {{-- Page header (lebih ringkas dari hero utama) --}}

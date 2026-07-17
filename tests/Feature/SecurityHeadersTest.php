@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 class SecurityHeadersTest extends TestCase
@@ -26,7 +27,8 @@ class SecurityHeadersTest extends TestCase
         $csp = (string) $response->headers->get('Content-Security-Policy');
         $this->assertStringContainsString("default-src 'self'", $csp);
         $this->assertStringContainsString("frame-ancestors 'none'", $csp);
-        $this->assertMatchesRegularExpression("/script-src 'self' 'nonce-[^']+' 'unsafe-eval'/", $csp);
+        $this->assertMatchesRegularExpression("/script-src 'self' 'nonce-[^']+'/", $csp);
+        $this->assertStringNotContainsString("'unsafe-eval'", $csp);
         $this->assertStringContainsString('upgrade-insecure-requests', $csp);
         $this->assertStringContainsString('max-age=', (string) $response->headers->get('Strict-Transport-Security'));
 
@@ -34,6 +36,40 @@ class SecurityHeadersTest extends TestCase
         $this->assertNotEmpty($nonce[1] ?? null);
         $this->assertStringContainsString("'nonce-{$nonce[1]}'", $csp);
         $this->assertStringContainsString('nonce="'.$nonce[1].'"', $response->getContent());
+    }
+
+    public function test_local_csp_mengizinkan_origin_vite_loopback_dan_hmr(): void
+    {
+        app()->instance('env', 'local');
+        config()->set('security.csp_enabled', true);
+
+        $originalHotFile = Vite::hotFile();
+        $testHotFile = storage_path('framework/testing/vite-csp.hot');
+
+        if (! is_dir(dirname($testHotFile))) {
+            mkdir(dirname($testHotFile), 0777, true);
+        }
+
+        file_put_contents($testHotFile, 'http://127.0.0.1:5173');
+        Vite::useHotFile($testHotFile);
+
+        try {
+            $response = $this->get('http://127.0.0.1/')
+                ->assertOk();
+
+            $csp = (string) $response->headers->get('Content-Security-Policy');
+            $this->assertStringContainsString(
+                "img-src 'self' data: blob: https: http://127.0.0.1:5173",
+                $csp,
+            );
+            $this->assertStringContainsString(
+                "connect-src 'self' data: http://127.0.0.1:5173 ws://127.0.0.1:5173",
+                $csp,
+            );
+        } finally {
+            Vite::useHotFile($originalHotFile);
+            @unlink($testHotFile);
+        }
     }
 
     public function test_production_http_tidak_memaksa_upgrade_sebelum_https_tersedia(): void
@@ -47,6 +83,7 @@ class SecurityHeadersTest extends TestCase
 
         $csp = (string) $response->headers->get('Content-Security-Policy');
         $this->assertStringNotContainsString('upgrade-insecure-requests', $csp);
+        $this->assertStringNotContainsString("connect-src 'self' data:", $csp);
         $this->assertNull($response->headers->get('Strict-Transport-Security'));
     }
 

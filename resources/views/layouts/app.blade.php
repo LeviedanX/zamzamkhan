@@ -24,27 +24,35 @@
     @php($seoKeywords = $seo['keywords'] ?? 'konsultan halal Malang, jasa sertifikat halal Malang, konsultan legalitas usaha Malang, jasa BPOM Malang, jasa NIB Malang, jasa HAKI Malang, jasa desain label kemasan Malang')
     @php($seoImage = $seo['og_image'] ?? asset('images/logo-zzk.png'))
     @php($seoCanonical = $seo['canonical'] ?? url('/'))
+    @php($sectionText = fn (string $name, mixed $default = '') => $__env->hasSection($name) ? $__env->yieldContent($name) : $default)
 
-    <title>@yield('title', $seoTitle)</title>
-    <meta name="description" content="@yield('description', $seoDesc)">
+    <title>{{ $sectionText('title', $seoTitle) }}</title>
+    <meta name="description" content="{{ $sectionText('description', $seoDesc) }}">
     <meta name="keywords" content="{{ $seoKeywords }}">
-    <link rel="canonical" href="@yield('canonical', $seoCanonical)">
-    <meta name="robots" content="@yield('robots', 'index, follow')">
+    <link rel="canonical" href="{{ $sectionText('canonical', $seoCanonical) }}">
+    <meta name="robots" content="{{ $sectionText('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1') }}">
 
     {{-- Open Graph --}}
-    <meta property="og:type" content="@yield('ogType', 'website')">
+    <meta property="og:type" content="{{ $sectionText('ogType', 'website') }}">
     <meta property="og:site_name" content="{{ config('company.name') }}">
     <meta property="og:locale" content="id_ID">
-    <meta property="og:title" content="@yield('ogTitle', $seo['og_title'] ?? $seoTitle)">
-    <meta property="og:description" content="@yield('ogDescription', $seo['og_description'] ?? $seoDesc)">
-    <meta property="og:image" content="@yield('ogImage', $seoImage)">
-    <meta property="og:url" content="@yield('ogUrl', url('/'))">
+    <meta property="og:title" content="{{ $sectionText('ogTitle', $seo['og_title'] ?? $seoTitle) }}">
+    <meta property="og:description" content="{{ $sectionText('ogDescription', $seo['og_description'] ?? $seoDesc) }}">
+    <meta property="og:image" content="{{ $sectionText('ogImage', $seoImage) }}">
+    <meta property="og:image:alt" content="{{ $sectionText('ogImageAlt', $sectionText('ogTitle', $seo['og_title'] ?? $seoTitle)) }}">
+    <meta property="og:url" content="{{ $sectionText('ogUrl', url('/')) }}">
+    @hasSection('articlePublishedTime')
+        <meta property="article:published_time" content="@yield('articlePublishedTime')">
+        <meta property="article:modified_time" content="@yield('articleModifiedTime')">
+        @hasSection('articleSection')<meta property="article:section" content="@yield('articleSection')">@endif
+    @endif
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('ogTitle', $seo['og_title'] ?? $seoTitle)">
-    <meta name="twitter:description" content="@yield('ogDescription', $seo['og_description'] ?? $seoDesc)">
-    <meta name="twitter:image" content="@yield('ogImage', $seoImage)">
+    <meta name="twitter:title" content="{{ $sectionText('ogTitle', $seo['og_title'] ?? $seoTitle) }}">
+    <meta name="twitter:description" content="{{ $sectionText('ogDescription', $seo['og_description'] ?? $seoDesc) }}">
+    <meta name="twitter:image" content="{{ $sectionText('ogImage', $seoImage) }}">
+    <meta name="twitter:image:alt" content="{{ $sectionText('ogImageAlt', $sectionText('ogTitle', $seo['og_title'] ?? $seoTitle)) }}">
 
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
 
@@ -57,7 +65,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans @yield('bodyClass')">
+<body class="font-sans {{ $sectionText('bodyClass') }}">
     <a href="#main-content" class="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-semibold text-navy-900 shadow-lg focus:fixed focus:left-4 focus:top-4 focus:not-sr-only">
         Lewati ke konten utama
     </a>

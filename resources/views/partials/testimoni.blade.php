@@ -4,7 +4,7 @@
         ->values();
 @endphp
 @if(count($testi))
-<section id="testimoni" x-data="testimonialSlider()"
+<section id="testimoni" x-data="testimonialSlider"
          class="testimonial-section section relative overflow-hidden border-t border-navy-100 bg-navy-50 dark:border-white/5 dark:bg-[#0c0708]">
     {{-- Aksen background halus + pemisah visual dari section Tentang --}}
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -63,8 +63,8 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
                 </button>
                 <span class="font-display text-sm font-bold tabular-nums text-navy-900 dark:text-white">
-                    <span x-text="String(index + 1).padStart(2, '0')">01</span>
-                    <span class="text-navy-400"> / <span x-text="String(stops).padStart(2, '0')">01</span></span>
+                    <span x-text="currentLabel">01</span>
+                    <span class="text-navy-400"> / <span x-text="totalLabel">01</span></span>
                 </span>
                 <button type="button" @click="onNext()" aria-label="Dokumentasi berikutnya" class="testimonial-next testimonial-arrow">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
@@ -76,13 +76,13 @@
                      {{-- Bentuk objek, bukan string: Alpine menulis string lewat
                           setAttribute('style') yang ditolak CSP; objek dipasang
                           lewat setProperty sehingga aman. --}}
-                     :style="{ width: `${((index + 1) / stops) * 100}%` }"></div>
+                     :style="progressStyle"></div>
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-1.5">
                 <template x-for="i in stops" :key="i">
                     <button type="button" @click="onDot(i - 1)"
-                            :aria-label="`Ke dokumentasi ${i}`"
+                            :aria-label="dotLabel(i)"
                             :aria-current="index === i - 1 ? 'true' : 'false'"
                             class="testimonial-dot"
                             :class="index === i - 1 ? 'testimonial-dot--active' : ''"></button>

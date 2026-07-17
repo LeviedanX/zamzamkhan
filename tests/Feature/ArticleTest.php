@@ -6,6 +6,8 @@ use App\Models\Admin;
 use App\Models\Article;
 use App\Models\ArticleCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ArticleTest extends TestCase
@@ -38,6 +40,16 @@ class ArticleTest extends TestCase
             'password' => 'password',
             'is_active' => true,
         ]);
+    }
+
+    private function pngUpload(string $name = 'seo.png'): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'zzk').'.png';
+        file_put_contents($path, base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+        ));
+
+        return new UploadedFile($path, $name, 'image/png', null, true);
     }
 
     public function test_halaman_index_artikel_dapat_diakses(): void
@@ -123,8 +135,8 @@ class ArticleTest extends TestCase
 
     public function test_guest_tidak_dapat_membuka_crud_artikel(): void
     {
-        $this->get(route('admin.articles.index'))->assertRedirect(route('admin.login'));
-        $this->get(route('admin.articles.create'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.articles.index'))->assertNotFound();
+        $this->get(route('admin.articles.create'))->assertNotFound();
     }
 
     public function test_validasi_create_artikel_berjalan(): void
@@ -173,5 +185,119 @@ class ArticleTest extends TestCase
             ->assertRedirect(route('admin.articles.index'));
 
         $this->assertDatabaseHas('articles', ['slug' => 'judul-sama-2']);
+    }
+
+    public function test_admin_dapat_mengedit_seo_lengkap_dan_gambar_sosial_artikel(): void
+    {
+        Storage::fake('public');
+        $article = $this->makeArticle(['slug' => 'seo-lengkap']);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->put(route('admin.articles.update', $article), [
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'article_category_id' => $article->article_category_id,
+                'excerpt' => $article->excerpt,
+                'content' => $article->content,
+                'status' => 'published',
+                'published_at' => $article->published_at->format('Y-m-d'),
+                'meta_title' => 'SEO Artikel Khusus',
+                'meta_description' => 'Deskripsi SEO khusus untuk artikel yang sedang diuji.',
+                'canonical_url' => 'https://example.com/sumber-utama',
+                'seo_robots' => 'noindex, follow',
+                'og_title' => 'Judul Berbagi Khusus',
+                'og_description' => 'Deskripsi ketika artikel dibagikan ke media sosial.',
+                'og_image' => $this->pngUpload(),
+                'exclude_from_sitemap' => '1',
+            ])
+            ->assertRedirect(route('admin.articles.index'));
+
+        $article->refresh();
+        $this->assertSame('SEO Artikel Khusus', $article->meta_title);
+        $this->assertSame('https://example.com/sumber-utama', $article->canonical_url);
+        $this->assertSame('noindex, follow', $article->seo_robots);
+        $this->assertTrue($article->exclude_from_sitemap);
+        $this->assertNotNull($article->og_image_path);
+        Storage::disk('public')->assertExists($article->og_image_path);
+    }
+
+    public function test_url_canonical_artikel_menolak_skema_non_http(): void
+    {
+        $article = $this->makeArticle(['slug' => 'canonical-aman']);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->put(route('admin.articles.update', $article), [
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'article_category_id' => $article->article_category_id,
+                'excerpt' => $article->excerpt,
+                'content' => $article->content,
+                'status' => 'published',
+                'canonical_url' => 'javascript:alert(1)',
+                'seo_robots' => 'index, follow',
+            ])
+            ->assertSessionHasErrors('canonical_url');
+    }
+
+    public function test_detail_artikel_merender_metadata_dan_schema_seo_per_artikel(): void
+    {
+        $article = $this->makeArticle([
+            'slug' => 'metadata-artikel',
+            'meta_title' => 'SEO Artikel Khusus',
+            'meta_description' => 'Deskripsi hasil pencarian khusus.',
+            'seo_robots' => 'index, follow',
+            'og_title' => 'Judul Open Graph Khusus',
+            'og_description' => 'Deskripsi Open Graph khusus.',
+            'cover_alt' => 'Ilustrasi artikel khusus',
+        ]);
+
+        $content = $this->get(route('artikel.show', $article->slug))->assertOk()->getContent();
+
+        $this->assertStringContainsString('<title>SEO Artikel Khusus</title>', $content);
+        $this->assertStringContainsString('<meta name="description" content="Deskripsi hasil pencarian khusus.">', $content);
+        $this->assertStringContainsString('content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"', $content);
+        $this->assertStringContainsString('<meta property="og:title" content="Judul Open Graph Khusus">', $content);
+        $this->assertStringContainsString('<meta property="og:image:alt" content="Ilustrasi artikel khusus">', $content);
+        $this->assertStringContainsString('"@type": "BlogPosting"', $content);
+        $this->assertStringContainsString('"@type": "BreadcrumbList"', $content);
+
+        preg_match('/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s', $content, $matches);
+        $schema = json_decode(trim($matches[1] ?? ''), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('https://schema.org', $schema['@context']);
+        $this->assertContains('BlogPosting', array_column($schema['@graph'], '@type'));
+    }
+
+    public function test_sitemap_hanya_memuat_artikel_indexable_dengan_self_canonical(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('articles/terlihat.png', base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+        ));
+        $visible = $this->makeArticle([
+            'title' => 'Artikel & Terlihat',
+            'slug' => 'artikel-terlihat',
+            'cover_image' => 'articles/terlihat.png',
+        ]);
+        $this->makeArticle(['slug' => 'artikel-noindex', 'seo_robots' => 'noindex, follow']);
+        $this->makeArticle(['slug' => 'artikel-dikecualikan', 'exclude_from_sitemap' => true]);
+        $this->makeArticle(['slug' => 'artikel-canonical-lain', 'canonical_url' => 'https://example.com/asli']);
+
+        $content = $this->get(route('sitemap'))->assertOk()->getContent();
+
+        $this->assertStringContainsString(route('artikel.show', $visible->slug), $content);
+        $this->assertStringContainsString('Artikel &amp; Terlihat', $content);
+        $this->assertStringNotContainsString('artikel-noindex', $content);
+        $this->assertStringNotContainsString('artikel-dikecualikan', $content);
+        $this->assertStringNotContainsString('artikel-canonical-lain', $content);
+        $this->assertStringNotContainsString('<changefreq>', $content);
+        $this->assertStringNotContainsString('<priority>', $content);
+        $this->assertNotFalse(simplexml_load_string($content));
+    }
+
+    public function test_hasil_pencarian_artikel_diberi_noindex(): void
+    {
+        $content = $this->get(route('artikel.index', ['q' => 'halal']))->assertOk()->getContent();
+
+        $this->assertStringContainsString('<meta name="robots" content="noindex, follow">', $content);
     }
 }

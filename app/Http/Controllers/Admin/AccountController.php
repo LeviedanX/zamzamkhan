@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Support\AdminSecurity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AccountController extends Controller
@@ -29,14 +29,17 @@ class AccountController extends Controller
             'current_email' => ['required', 'email'],
             'current_password' => ['required', 'string'],
             'email' => ['required', 'email:rfc', 'max:160', 'ends_with:@gmail.com', Rule::unique('admins', 'email')->ignore($admin->id)],
-            'password' => ['nullable', 'confirmed', Password::min(10)->mixedCase()->numbers()],
+            'password' => ['nullable', 'confirmed', AdminSecurity::passwordRule()],
         ], [
             'current_email.required' => 'Email akun lama wajib diisi.',
             'current_password.required' => 'Password akun lama wajib diisi.',
             'email.ends_with' => 'Email admin wajib menggunakan domain @gmail.com.',
             'email.unique' => 'Email tersebut sudah digunakan akun admin lain.',
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
-            'password.min' => 'Password baru minimal 10 karakter.',
+            'password.min' => 'Password baru minimal 14 karakter.',
+            'password.mixed' => 'Password baru wajib memuat huruf besar dan kecil.',
+            'password.numbers' => 'Password baru wajib memuat angka.',
+            'password.symbols' => 'Password baru wajib memuat simbol.',
         ]);
 
         $oldEmailValid = hash_equals(strtolower($admin->email), strtolower($data['current_email']));
@@ -56,6 +59,7 @@ class AccountController extends Controller
         if ($passwordChanged) {
             $admin->password = $data['password'];
         }
+        $admin->auth_version = max(1, (int) $admin->auth_version) + 1;
         $admin->setRememberToken(Str::random(60));
         $admin->save();
 
@@ -67,6 +71,7 @@ class AccountController extends Controller
         }
 
         $request->session()->regenerate();
+        $request->session()->put(AdminSecurity::SESSION_AUTH_VERSION, (int) $admin->auth_version);
 
         return redirect()->route('admin.account.edit')->with('ok', 'Kredensial akun admin berhasil diperbarui.');
     }

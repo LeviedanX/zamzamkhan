@@ -9,15 +9,34 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BusinessApplication extends Model
 {
-    public const STATUSES = ['Penawaran', 'Kontrak', 'Penyusunan SJPH', 'Audit Eksternal', 'Sidang Fatwa', 'Sertifikat Terbit', 'Ditunda', 'Batal'];
-
     protected $guarded = [];
+
     protected $casts = ['submitted_at' => 'date', 'certificate_issued_at' => 'date'];
 
-    public function category(): BelongsTo { return $this->belongsTo(BusinessCategory::class, 'business_category_id'); }
-    public function histories(): HasMany { return $this->hasMany(BusinessApplicationStatusHistory::class)->latest(); }
-    public function creator(): BelongsTo { return $this->belongsTo(Admin::class, 'created_by'); }
-    public function updater(): BelongsTo { return $this->belongsTo(Admin::class, 'updated_by'); }
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(BusinessCategory::class, 'business_category_id');
+    }
+
+    public function processStatusDefinition(): BelongsTo
+    {
+        return $this->belongsTo(BusinessProcessStatus::class, 'process_status', 'name');
+    }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(BusinessApplicationStatusHistory::class)->latest();
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'updated_by');
+    }
 
     public function scopeFiltered(Builder $query, array $filters): Builder
     {

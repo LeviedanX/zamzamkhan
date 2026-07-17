@@ -29,9 +29,15 @@ class ResponsiveShellTest extends TestCase
     {
         $viewport = 'content="width=device-width, initial-scale=1, viewport-fit=cover"';
 
+        $this->post(route('admin.access'))->assertRedirect(route('admin.login'));
         $this->get(route('admin.login'))
             ->assertOk()
             ->assertSee($viewport, false);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+
+        $this->assertStringNotContainsString('login-card-in', $css);
+        $this->assertStringNotContainsString('login-glow-float', $css);
 
         $admin = Admin::create([
             'name' => 'Admin Responsive',

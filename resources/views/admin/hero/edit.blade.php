@@ -8,6 +8,9 @@
     $help = 'mt-1.5 text-xs leading-relaxed text-navy-400';
     $defaultChips = ['Sertifikasi Halal', 'Legalitas Usaha', 'BPOM & HAKI', 'Logo & Label Kemasan'];
     $chipItems = collect(preg_split('/\r\n|\r|\n/', old('service_chips', $hero->service_chips) ?: implode("\n", $defaultChips)))->map(fn ($x) => trim($x))->filter()->values();
+    $heroImageUrl = \App\Support\PublicMedia::previewUrl($hero->image_path);
+    $heroPortraitUrl = \App\Support\PublicMedia::previewUrl($hero->portrait_path);
+    $formConfig = ['chips' => $chipItems->values(), 'defaultChips' => $defaultChips];
 @endphp
 
 @section('content')
@@ -20,26 +23,7 @@
 </div>
 
 <form method="POST" action="{{ route('admin.hero.update') }}" enctype="multipart/form-data" class="space-y-6"
-      x-data="{
-          chips: @js($chipItems->values()),
-          chipDraft: '',
-          defaultChips: @js($defaultChips),
-          normalizedChips() {
-              return this.chips.map((chip) => (chip || '').trim()).filter(Boolean);
-          },
-          chipPayload() {
-              return this.normalizedChips().join('\n');
-          },
-          addChip() {
-              const value = this.chipDraft.trim();
-              if (! value) return;
-              this.chips.push(value);
-              this.chipDraft = '';
-          },
-          removeChip(index) {
-              this.chips.splice(index, 1);
-          }
-      }">
+      x-data="heroEditor" data-config="{{ json_encode($formConfig, JSON_THROW_ON_ERROR) }}">
     @csrf @method('PUT')
 
     <div class="admin-form-shell">
@@ -94,13 +78,13 @@
                 <div class="mt-5">
                     <div class="mb-2 flex items-center justify-between gap-3">
                         <label class="{{ $label }} mb-0!">Chip layanan</label>
-                        <span class="text-xs font-semibold text-navy-400" x-text="`${normalizedChips().length} chip`"></span>
+                        <span class="text-xs font-semibold text-navy-400" x-text="chipCountLabel"></span>
                     </div>
                     <input type="hidden" name="service_chips" :value="chipPayload()">
                     <div class="space-y-2">
                         <template x-for="(chip, index) in chips" :key="index">
                             <div class="flex items-center gap-2 rounded-2xl border border-navy-100 bg-white/70 p-2">
-                                <input type="text" x-model="chips[index]" class="{{ $inp }} py-2!" :aria-label="`Chip layanan ${index + 1}`">
+                                <input type="text" x-model="chips[index]" class="{{ $inp }} py-2!" :aria-label="chipLabel(index)">
                                 <button type="button" class="rounded-xl border border-red-900/20 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-900/5" @click="removeChip(index)">Hapus</button>
                             </div>
                         </template>
@@ -121,6 +105,12 @@
                 <div class="grid gap-5 lg:grid-cols-2">
                     <div>
                         <label class="{{ $label }}">Gambar latar hero (opsional)</label>
+                        @if ($heroImageUrl)
+                            <div class="mb-2">
+                                <p class="mb-1 text-xs font-semibold text-navy-500">Gambar saat ini:</p>
+                                <img src="{{ $heroImageUrl }}" alt="Gambar latar hero saat ini" class="h-24 w-full max-w-xs rounded-xl border border-navy-100 object-cover">
+                            </div>
+                        @endif
                         <input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="{{ $inp }}">
                         <p class="{{ $help }}">JPG/PNG/WEBP, maksimal 4 MB. Upload baru akan mengganti gambar latar lama.</p>
                         @if ($hero->image_path)
@@ -132,6 +122,12 @@
                     </div>
                     <div>
                         <label class="{{ $label }}">Gambar figur direktur</label>
+                        @if ($heroPortraitUrl)
+                            <div class="mb-2">
+                                <p class="mb-1 text-xs font-semibold text-navy-500">Gambar saat ini:</p>
+                                <img src="{{ $heroPortraitUrl }}" alt="Gambar figur direktur saat ini" class="h-28 w-auto max-w-32 rounded-xl border border-navy-100 object-cover">
+                            </div>
+                        @endif
                         <input name="portrait" type="file" accept="image/jpeg,image/png,image/webp" class="{{ $inp }}">
                         <p class="{{ $help }}">Upload cutout/portrait PNG atau WEBP. Upload baru akan mengganti figur lama.</p>
                         @if ($hero->portrait_path)

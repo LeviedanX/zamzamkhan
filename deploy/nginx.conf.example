@@ -134,9 +134,10 @@ server {
         try_files $uri =404;
     }
 
-    location ~* \.(?:png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$ {
+    location ~* ^/(?!storage/).*\.(?:png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$ {
         expires 30d;
         add_header Cache-Control "public";
+        add_header X-Content-Type-Options "nosniff" always;
         access_log off;
         try_files $uri =404;
     }
@@ -148,8 +149,20 @@ server {
         deny all;
     }
 
-    location ~* /storage/.*\.(?:php|phtml|phar|cgi|pl|py|sh)$ {
-        deny all;
+    location ~* ^/storage/.*(?:\.(?:php|phtml|phar|cgi|pl|py|sh|html?|svg))(?:\.|$) {
+        return 404;
+    }
+
+    location ~* ^/storage/.*\.(?:jpe?g|png|webp)$ {
+        expires 30d;
+        add_header Cache-Control "public";
+        add_header X-Content-Type-Options "nosniff" always;
+        access_log off;
+        try_files $uri =404;
+    }
+
+    location /storage/ {
+        return 404;
     }
 
     location = /favicon.ico { access_log off; log_not_found off; }

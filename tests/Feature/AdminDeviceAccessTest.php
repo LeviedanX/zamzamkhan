@@ -15,6 +15,10 @@ class AdminDeviceAccessTest extends TestCase
     public function test_login_admin_tetap_tersedia_untuk_browser_desktop(): void
     {
         $this->withHeader('User-Agent', self::DESKTOP_USER_AGENT)
+            ->post(route('admin.access'))
+            ->assertRedirect(route('admin.login'));
+
+        $this->withHeader('User-Agent', self::DESKTOP_USER_AGENT)
             ->get(route('admin.login'))
             ->assertOk()
             ->assertSee('Masukkan kata sandi');
@@ -29,6 +33,10 @@ class AdminDeviceAccessTest extends TestCase
         ];
 
         foreach ($mobileUserAgents as $userAgent) {
+            $this->withHeader('User-Agent', $userAgent)
+                ->post(route('admin.access'))
+                ->assertForbidden();
+
             $this->withHeader('User-Agent', $userAgent)
                 ->get(route('admin.login'))
                 ->assertForbidden()

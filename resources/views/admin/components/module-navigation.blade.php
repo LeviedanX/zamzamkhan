@@ -1,7 +1,7 @@
 @php
     $category = match (true) {
-        request()->routeIs('admin.applications.*', 'admin.business-categories.*', 'admin.reports.*', 'admin.analytics.*') => 'Operasional Internal',
-        request()->routeIs('admin.seo.*', 'admin.account.*') => 'Pengaturan',
+        request()->routeIs('admin.applications.*', 'admin.process-statuses.*', 'admin.business-categories.*', 'admin.reports.*', 'admin.analytics.*') => 'Operasional Internal',
+        request()->routeIs('admin.shortcuts.*', 'admin.seo.*', 'admin.account.*') => 'Pengaturan',
         request()->routeIs('admin.dashboard') => 'Ringkasan',
         default => 'Konten Website',
     };

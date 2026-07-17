@@ -239,18 +239,17 @@
 .reveal.reveal-scale { transform: scale(0.93); }
 .reveal.is-visible { opacity: 1; transform: none; }
 
-/* ================= Hero background system (bg1.webp cityscape) ================= */
+/* ================= Hero background system (WebP/custom CMS) ================= */
 .hero-bg { z-index: 0; }
 
-/* Layer 1 — cityscape bg1.webp. Path absolut agar resolve ke origin Laravel
-   (bukan origin Vite dev-server) tanpa perlu atribut style inline, yang akan
-   ditolak CSP karena style-src tidak lagi mengizinkan unsafe-inline. */
+/* Layer 1 — cityscape. URL dipasang dari data-bg melalui CSSOM agar
+   selalu memakai origin Laravel dan tetap kompatibel dengan CSP. */
 .hero-bg-image {
     background-color: #0a0505;
-    background-image: url('/images/bg1.webp');
     background-size: cover;
     background-position: center 72%;
     background-repeat: no-repeat;
+    filter: brightness(1.18) saturate(1.08) contrast(1.02);
     will-change: transform;
 }
 
@@ -265,15 +264,15 @@
 .hero-overlay {
     background:
         linear-gradient(90deg,
-            rgba(6,4,4,0.95) 0%,
-            rgba(8,3,3,0.74) 32%,
-            rgba(14,5,5,0.34) 60%,
-            rgba(30,8,8,0.06) 100%),
+            rgba(6,4,4,0.84) 0%,
+            rgba(8,3,3,0.60) 32%,
+            rgba(14,5,5,0.22) 60%,
+            rgba(30,8,8,0.04) 100%),
         linear-gradient(180deg,
-            rgba(6,4,4,0.40) 0%,
+            rgba(6,4,4,0.30) 0%,
             transparent 26%,
             transparent 68%,
-            rgba(6,4,4,0.52) 100%);
+            rgba(6,4,4,0.38) 100%);
 }
 
 /* Layer 4 — radial red glow kanan (belakang foto), bergerak & berdenyut pelan */
@@ -436,12 +435,7 @@
     z-index: -1;
 }
 
-/* Admin: entrance sekali saat load + latar dekoratif */
-@keyframes admin-in {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: none; }
-}
-.admin-enter { animation: admin-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* Konten admin langsung tersedia pada paint pertama. */
 .admin-enter h1,
 .admin-enter h2,
 .admin-enter section {
@@ -656,6 +650,8 @@
     background: linear-gradient(90deg, var(--color-emerald-brand), var(--color-tosca-400));
 }
 .admin-module-group {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 34rem;
     border-radius: 1.35rem;
     border: 1px solid rgba(127,29,29,0.08);
     background: rgba(255,255,255,0.34);
@@ -5066,6 +5062,54 @@ body.whatsapp-lead-open .floating-actions,
     opacity: 0.42;
     transform: none;
 }
+
+/* Shortcut bulk replace: perbedaan sebelum/sesudah harus terbaca tanpa
+   mengandalkan warna saja dan tetap ringkas pada layar admin. */
+.shortcut-case-toggle { align-self: end; }
+.shortcut-safety-note {
+    display: grid;
+    gap: 0.2rem;
+    border: 1px solid color-mix(in srgb, var(--admin-maroon) 24%, var(--admin-border));
+    border-radius: 0.95rem;
+    background: var(--admin-soft-maroon);
+    padding: 0.9rem 1rem;
+    color: var(--admin-ink);
+}
+.shortcut-safety-note strong { font-size: 0.84rem; }
+.shortcut-safety-note span { font-size: 0.78rem; line-height: 1.55; color: var(--admin-muted); }
+.shortcut-replacement-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+.shortcut-replacement-pair > div,
+.shortcut-preview-item {
+    min-width: 0;
+    border: 1px solid var(--admin-border);
+    border-radius: 1rem;
+    background: var(--admin-surface);
+    padding: 0.95rem;
+}
+.shortcut-replacement-pair dt,
+.shortcut-preview-item__comparison span {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--admin-muted);
+}
+.shortcut-replacement-pair dd { margin-top: 0.35rem; overflow-wrap: anywhere; color: var(--admin-ink); }
+.shortcut-preview-list { display: grid; gap: 0.8rem; }
+.shortcut-preview-item__meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.3rem 1rem; }
+.shortcut-preview-item__meta strong { color: var(--admin-ink); font-size: 0.85rem; }
+.shortcut-preview-item__meta span { color: var(--admin-muted); font-size: 0.72rem; }
+.shortcut-preview-item__comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+.shortcut-preview-item__comparison > div { min-width: 0; border-radius: 0.8rem; background: color-mix(in srgb, var(--admin-surface) 91%, var(--admin-soft-maroon)); padding: 0.75rem; }
+.shortcut-preview-item__comparison p { margin-top: 0.3rem; overflow-wrap: anywhere; color: var(--admin-ink); font-size: 0.8rem; line-height: 1.55; }
+@media (max-width: 640px) {
+    .shortcut-replacement-pair,
+    .shortcut-preview-item__comparison { grid-template-columns: 1fr; }
+}
 [data-admin-theme="dark"] .admin-process-badge {
     border-color: rgba(248, 113, 113, 0.24);
     background: rgba(127, 29, 29, 0.26);
@@ -5973,12 +6017,8 @@ body.whatsapp-lead-open .floating-actions,
 }
 /* Radial red glow + blob */
 .login-glow { position: absolute; border-radius: 9999px; filter: blur(90px); pointer-events: none; z-index: 0; }
-.login-glow--1 { top: -10rem; right: -6rem; height: 30rem; width: 30rem; background: radial-gradient(circle, rgba(185,28,28,0.34), transparent 70%); animation: login-glow-float 14s ease-in-out infinite; }
-.login-glow--2 { bottom: -12rem; left: -7rem; height: 28rem; width: 28rem; background: radial-gradient(circle, rgba(127,29,29,0.28), transparent 70%); animation: login-glow-float 19s ease-in-out infinite reverse; }
-@keyframes login-glow-float {
-    0%, 100% { transform: translate(0,0) scale(1); opacity: 0.75; }
-    50%      { transform: translate(24px,-20px) scale(1.08); opacity: 1; }
-}
+.login-glow--1 { top: -10rem; right: -6rem; height: 30rem; width: 30rem; background: radial-gradient(circle, rgba(185,28,28,0.34), transparent 70%); }
+.login-glow--2 { bottom: -12rem; left: -7rem; height: 28rem; width: 28rem; background: radial-gradient(circle, rgba(127,29,29,0.28), transparent 70%); }
 
 /* Layout utama */
 .login-layout {
@@ -6000,23 +6040,16 @@ body.whatsapp-lead-open .floating-actions,
     position: relative;
     border-radius: 1.5rem;
     border: 1px solid rgba(255,255,255,0.10);
-    background: linear-gradient(165deg, rgba(28,16,17,0.78), rgba(10,7,7,0.72));
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: linear-gradient(165deg, rgba(28,16,17,0.94), rgba(10,7,7,0.91));
     padding: 2rem 1.75rem 1.9rem;
     box-shadow: 0 30px 70px -30px rgba(0,0,0,0.85), 0 0 0 1px rgba(185,28,28,0.10),
                 inset 0 1px 0 rgba(255,255,255,0.06);
-    animation: login-card-in 0.6s cubic-bezier(0.22,1,0.36,1) both;
 }
 /* Aksen merah tipis atas kartu */
 .login-card::before {
     content: ""; position: absolute; top: 0; left: 1.75rem; right: 1.75rem; height: 2px; border-radius: 0 0 3px 3px;
     background: linear-gradient(90deg, transparent, var(--color-tosca-400), var(--color-emerald-brand), transparent);
     opacity: 0.85;
-}
-@keyframes login-card-in {
-    from { opacity: 0; transform: translateY(18px) scale(0.97); }
-    to   { opacity: 1; transform: none; }
 }
 @media (min-width: 480px) { .login-card { padding: 2.25rem 2rem 2rem; } }
 @media (max-width: 479px) {

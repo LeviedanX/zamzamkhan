@@ -8,6 +8,18 @@
     $help = 'mt-1 text-xs leading-relaxed text-navy-400';
     $benefitItems = collect(preg_split('/\r\n|\r|\n/', old('benefits', $service->benefits) ?: ''))->map(fn ($x) => trim($x))->filter()->values();
     $workflowItems = collect(preg_split('/\r\n|\r|\n/', old('workflow_steps', $service->workflow_steps) ?: ''))->map(fn ($x) => trim($x))->filter()->values();
+    $formConfig = [
+        'title' => old('title', $service->title),
+        'icon' => old('icon', $service->icon ?: 'halal'),
+        'summary' => old('summary', $service->summary),
+        'description' => old('description', $service->description),
+        'suitableFor' => old('suitable_for', $service->suitable_for),
+        'whatsappMessage' => old('whatsapp_message', $service->whatsapp_message),
+        'benefits' => $benefitItems,
+        'workflowSteps' => $workflowItems,
+        'isActive' => (bool) old('is_active', $service->exists ? $service->is_active : true),
+        'isFeatured' => (bool) old('is_featured', $service->is_featured ?? false),
+    ];
 @endphp
 
 @section('content')
@@ -19,48 +31,7 @@
 </div>
 
 <form method="POST" action="{{ $service->exists ? route('admin.services.update', $service) : route('admin.services.store') }}" class="admin-form-shell"
-      x-data="{
-          title: @js(old('title', $service->title)),
-          icon: @js(old('icon', $service->icon ?: 'halal')),
-          summary: @js(old('summary', $service->summary)),
-          description: @js(old('description', $service->description)),
-          suitableFor: @js(old('suitable_for', $service->suitable_for)),
-          whatsappMessage: @js(old('whatsapp_message', $service->whatsapp_message)),
-          benefits: @js($benefitItems),
-          benefitDraft: '',
-          workflowSteps: @js($workflowItems),
-          workflowDraft: '',
-          isActive: @js((bool) old('is_active', $service->exists ? $service->is_active : true)),
-          isFeatured: @js((bool) old('is_featured', $service->is_featured ?? false)),
-          iconOptions: ['halal', 'halal-reg', 'nib', 'akta', 'pajak', 'bpom', 'haki', 'desain'],
-          cleanList(items) {
-              return items.map((item) => (item || '').trim()).filter(Boolean);
-          },
-          benefitPayload() {
-              return this.cleanList(this.benefits).join('\n');
-          },
-          workflowPayload() {
-              return this.cleanList(this.workflowSteps).join('\n');
-          },
-          addBenefit() {
-              const value = this.benefitDraft.trim();
-              if (! value) return;
-              this.benefits.push(value);
-              this.benefitDraft = '';
-          },
-          removeBenefit(index) {
-              this.benefits.splice(index, 1);
-          },
-          addWorkflow() {
-              const value = this.workflowDraft.trim();
-              if (! value) return;
-              this.workflowSteps.push(value);
-              this.workflowDraft = '';
-          },
-          removeWorkflow(index) {
-              this.workflowSteps.splice(index, 1);
-          },
-      }">
+      x-data="serviceEditor" data-config="{{ json_encode($formConfig, JSON_THROW_ON_ERROR) }}">
     @csrf
     @if ($service->exists) @method('PUT') @endif
 
@@ -110,14 +81,14 @@
         <div>
             <div class="mb-2 flex items-center justify-between gap-3">
                 <label class="{{ $lbl }} !mb-0">Manfaat utama</label>
-                <span class="text-xs font-semibold text-navy-400" x-text="`${cleanList(benefits).length} poin`"></span>
+                <span class="text-xs font-semibold text-navy-400" x-text="benefitCountLabel"></span>
             </div>
             <input type="hidden" name="benefits" :value="benefitPayload()">
             <div class="space-y-2">
                 <template x-for="(benefit, index) in benefits" :key="index">
                     <div class="flex items-center gap-2 rounded-2xl border border-navy-100 bg-white/70 p-2">
                         <span class="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-red-900 text-xs font-bold text-white" x-text="index + 1"></span>
-                        <input type="text" x-model="benefits[index]" class="{{ $inp }} !py-2" :aria-label="`Manfaat ${index + 1}`">
+                        <input type="text" x-model="benefits[index]" class="{{ $inp }} !py-2" :aria-label="benefitLabel(index)">
                         <button type="button" class="rounded-xl border border-red-900/20 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-900/5" @click="removeBenefit(index)">Hapus</button>
                     </div>
                 </template>
@@ -130,14 +101,14 @@
         <div>
             <div class="mb-2 flex items-center justify-between gap-3">
                 <label class="{{ $lbl }} !mb-0">Alur singkat</label>
-                <span class="text-xs font-semibold text-navy-400" x-text="`${cleanList(workflowSteps).length} tahap`"></span>
+                <span class="text-xs font-semibold text-navy-400" x-text="workflowCountLabel"></span>
             </div>
             <input type="hidden" name="workflow_steps" :value="workflowPayload()">
             <div class="space-y-2">
                 <template x-for="(step, index) in workflowSteps" :key="index">
                     <div class="flex items-center gap-2 rounded-2xl border border-navy-100 bg-white/70 p-2">
                         <span class="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-red-900 text-xs font-bold text-white" x-text="index + 1"></span>
-                        <input type="text" x-model="workflowSteps[index]" class="{{ $inp }} !py-2" :aria-label="`Alur ${index + 1}`">
+                        <input type="text" x-model="workflowSteps[index]" class="{{ $inp }} !py-2" :aria-label="workflowLabel(index)">
                         <button type="button" class="rounded-xl border border-red-900/20 px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-900/5" @click="removeWorkflow(index)">Hapus</button>
                     </div>
                 </template>
@@ -180,4 +151,3 @@
     </div>
 </form>
 @endsection
-

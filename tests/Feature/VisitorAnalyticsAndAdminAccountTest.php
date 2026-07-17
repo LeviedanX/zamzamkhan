@@ -95,13 +95,13 @@ class VisitorAnalyticsAndAdminAccountTest extends TestCase
             'current_email' => 'adminlama@gmail.com',
             'current_password' => 'PasswordLama123',
             'email' => 'adminbaru@gmail.com',
-            'password' => 'PasswordBaru456',
-            'password_confirmation' => 'PasswordBaru456',
+            'password' => 'Password-Baru-456!',
+            'password_confirmation' => 'Password-Baru-456!',
         ])->assertRedirect(route('admin.account.edit'));
 
         $admin->refresh();
         $this->assertSame('adminbaru@gmail.com', $admin->email);
-        $this->assertTrue(Hash::check('PasswordBaru456', $admin->password));
+        $this->assertTrue(Hash::check('Password-Baru-456!', $admin->password));
         $this->assertAuthenticatedAs($admin, 'admin');
     }
 }

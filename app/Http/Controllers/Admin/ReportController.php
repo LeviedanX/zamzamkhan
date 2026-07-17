@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessApplication;
 use App\Models\BusinessCategory;
+use App\Models\BusinessProcessStatus;
 use App\Models\ReportExport;
 use App\Support\ReportExcelWriter;
 use Illuminate\Http\Request;
@@ -15,10 +16,10 @@ use Illuminate\Validation\Rule;
 class ReportController extends Controller
 {
     public const COLUMNS = [
-        'brand_name'=>'Merek', 'business_name'=>'Perusahaan', 'owner_name'=>'Pemilik',
-        'registration_number'=>'No. Daftar', 'applicant_type'=>'Jenis Pemohon',
-        'business_category'=>'Kategori Bisnis', 'process_status'=>'Status',
-        'submitted_at'=>'Tanggal Masuk', 'certificate_issued_at'=>'Tanggal Sertifikat',
+        'brand_name' => 'Merek', 'business_name' => 'Perusahaan', 'owner_name' => 'Pemilik',
+        'registration_number' => 'No. Daftar', 'applicant_type' => 'Jenis Pemohon',
+        'business_category' => 'Kategori Bisnis', 'process_status' => 'Status',
+        'submitted_at' => 'Tanggal Masuk', 'certificate_issued_at' => 'Tanggal Sertifikat',
     ];
 
     public function index(Request $request)
@@ -27,10 +28,11 @@ class ReportController extends Controller
         $query = BusinessApplication::filtered($filters)->with('category');
         $results = (clone $query)->latest('submitted_at')->latest('id')->paginate(25)->withQueryString();
         $summary = $this->summary(clone $query);
-        $categories = BusinessCategory::where('is_active',true)->orderBy('name')->get();
+        $categories = BusinessCategory::where('is_active', true)->orderBy('name')->get();
+        $statuses = BusinessProcessStatus::ordered()->get();
         $history = ReportExport::with('admin')->latest('generated_at')->limit(20)->get();
 
-        return view('admin.reports.index', compact('results','summary','filters','categories','history'));
+        return view('admin.reports.index', compact('results', 'summary', 'filters', 'categories', 'statuses', 'history'));
     }
 
     public function exportCsv(Request $request)
@@ -53,7 +55,9 @@ class ReportController extends Controller
         // escape: '' — PHP 8.4 mendeprekasi nilai default; sekaligus mematikan
         // escape backslash ala PHP yang bukan CSV standar dan bisa merusak sel.
         fputcsv($stream, array_map(fn ($c) => self::COLUMNS[$c], $columns), ',', '"', '');
-        foreach ($rows as $row) fputcsv($stream, array_map(fn ($c) => $this->csvValue($this->value($row, $c)), $columns), ',', '"', '');
+        foreach ($rows as $row) {
+            fputcsv($stream, array_map(fn ($c) => $this->csvValue($this->value($row, $c)), $columns), ',', '"', '');
+        }
         rewind($stream);
         $stored = Storage::disk('local')->put($path, stream_get_contents($stream));
         fclose($stream);
@@ -69,7 +73,7 @@ class ReportController extends Controller
             throw $e;
         }
 
-        return Storage::disk('local')->download($path, basename($path), ['Content-Type'=>'text/csv; charset=UTF-8']);
+        return Storage::disk('local')->download($path, basename($path), ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function exportExcel(Request $request)
@@ -108,10 +112,18 @@ class ReportController extends Controller
     {
         $parts = ['Dibuat '.now()->locale('id')->translatedFormat('d F Y, H:i').' WIB', $total.' data'];
 
-        if (filled($filters['keyword'] ?? null)) $parts[] = 'Kata kunci: '.$filters['keyword'];
-        if (filled($filters['process_status'] ?? null)) $parts[] = 'Status: '.$filters['process_status'];
-        if (filled($filters['applicant_type'] ?? null)) $parts[] = 'Jenis: '.($filters['applicant_type'] === 'company' ? 'Badan Usaha' : 'Perorangan');
-        if (filled($filters['business_category_id'] ?? null)) $parts[] = 'Kategori: '.(BusinessCategory::find($filters['business_category_id'])?->name ?? '-');
+        if (filled($filters['keyword'] ?? null)) {
+            $parts[] = 'Kata kunci: '.$filters['keyword'];
+        }
+        if (filled($filters['process_status'] ?? null)) {
+            $parts[] = 'Status: '.$filters['process_status'];
+        }
+        if (filled($filters['applicant_type'] ?? null)) {
+            $parts[] = 'Jenis: '.($filters['applicant_type'] === 'company' ? 'Badan Usaha' : 'Perorangan');
+        }
+        if (filled($filters['business_category_id'] ?? null)) {
+            $parts[] = 'Kategori: '.(BusinessCategory::find($filters['business_category_id'])?->name ?? '-');
+        }
         if (filled($filters['date_from'] ?? null) || filled($filters['date_to'] ?? null)) {
             $parts[] = 'Periode: '.($filters['date_from'] ?? '…').' s/d '.($filters['date_to'] ?? '…');
         }
@@ -126,12 +138,13 @@ class ReportController extends Controller
         $data = BusinessApplication::filtered($filters)->with('category')->latest('submitted_at')->latest('id')->get();
         $summary = $this->summary(BusinessApplication::filtered($filters));
 
-        return view('admin.reports.print', compact('filters','columns','data','summary'));
+        return view('admin.reports.print', compact('filters', 'columns', 'data', 'summary'));
     }
 
     public function download(ReportExport $reportExport)
     {
         abort_unless($reportExport->file_path && Storage::disk('local')->exists($reportExport->file_path), 404);
+
         return Storage::disk('local')->download($reportExport->file_path);
     }
 
@@ -170,17 +183,21 @@ class ReportController extends Controller
     private function filters(Request $request): array
     {
         return $request->validate([
-            'keyword'=>['nullable','string','max:255'], 'applicant_type'=>['nullable',Rule::in(['company','individual'])],
-            'process_status'=>['nullable',Rule::in(BusinessApplication::STATUSES)],
-            'business_category_id'=>['nullable','integer',Rule::exists('business_categories','id')],
-            'date_from'=>['nullable','date'], 'date_to'=>['nullable','date','after_or_equal:date_from'],
-            'columns'=>['nullable','array'], 'columns.*'=>[Rule::in(array_keys(self::COLUMNS))],
+            'keyword' => ['nullable', 'string', 'max:255'], 'applicant_type' => ['nullable', Rule::in(['company', 'individual'])],
+            'process_status' => ['nullable', 'string', 'max:50', Rule::exists('business_process_statuses', 'name')],
+            'business_category_id' => ['nullable', 'integer', Rule::exists('business_categories', 'id')],
+            'date_from' => ['nullable', 'date'], 'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'columns' => ['nullable', 'array'], 'columns.*' => [Rule::in(array_keys(self::COLUMNS))],
         ]);
     }
 
     private function summary($query): array
     {
-        return ['total'=>(clone $query)->count(), 'issued'=>(clone $query)->where('process_status','Sertifikat Terbit')->count(), 'ongoing'=>(clone $query)->whereNotIn('process_status',['Sertifikat Terbit','Batal'])->count()];
+        return [
+            'total' => (clone $query)->count(),
+            'issued' => (clone $query)->whereIn('process_status', BusinessProcessStatus::namesForType('issued'))->count(),
+            'ongoing' => (clone $query)->whereIn('process_status', BusinessProcessStatus::namesForType('ongoing'))->count(),
+        ];
     }
 
     private function value(BusinessApplication $row, string $column): string
@@ -205,6 +222,6 @@ class ReportController extends Controller
 
     private function record(array $filters, array $columns, string $format, string $path): void
     {
-        ReportExport::create(['title'=>'Laporan Data Pengajuan','report_type'=>'applications','filters_json'=>$filters,'columns_json'=>$columns,'format'=>$format,'file_path'=>$path,'generated_by'=>auth('admin')->id(),'generated_at'=>now()]);
+        ReportExport::create(['title' => 'Laporan Data Pengajuan', 'report_type' => 'applications', 'filters_json' => $filters, 'columns_json' => $columns, 'format' => $format, 'file_path' => $path, 'generated_by' => auth('admin')->id(), 'generated_at' => now()]);
     }
 }

@@ -52,6 +52,8 @@ class AdminModuleNavigationTest extends TestCase
         $response = $this->actingAs($admin, 'admin')
             ->get(route('admin.dashboard'))
             ->assertOk()
+            ->assertSee('data-admin-canonical="'.route('admin.login').'"', false)
+            ->assertSee('src="'.asset('images/logo-zzk.webp').'"', false)
             ->assertSee('x-transition:enter-start="-translate-x-full"', false)
             ->assertSee('<details class="admin-drawer__section admin-nav-group" open>', false)
             ->assertSeeText('Operasional Internal');
@@ -70,8 +72,10 @@ class AdminModuleNavigationTest extends TestCase
             'admin.agendas.index',
             'admin.business-categories.index',
             'admin.applications.index',
+            'admin.process-statuses.index',
             'admin.reports.index',
             'admin.analytics.index',
+            'admin.shortcuts.index',
             'admin.seo.edit',
             'admin.account.edit',
         ];
@@ -87,6 +91,32 @@ class AdminModuleNavigationTest extends TestCase
 
         $this->assertStringContainsString('inset: 0 auto 0 0;', $css);
         $this->assertStringContainsString('box-shadow: 28px 0 70px', $css);
+
+        $javascript = file_get_contents(resource_path('js/app.js'));
+        $this->assertStringContainsString('adminRouteUrl', $javascript);
+        $this->assertStringContainsString("history.pushState(state, '', canonicalAdminPath)", $javascript);
+    }
+
+    public function test_respons_navigasi_parsial_tidak_mengirim_ulang_style_kritis(): void
+    {
+        $admin = Admin::create([
+            'name' => 'Admin Partial',
+            'email' => 'partial@uji.test',
+            'password' => 'password',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.hero.edit'))
+            ->assertOk()
+            ->assertSee('Background kritis mencegah flash putih', false);
+
+        $this->actingAs($admin, 'admin')
+            ->withHeader('X-Admin-Navigation', 'partial')
+            ->get(route('admin.hero.edit'))
+            ->assertOk()
+            ->assertSee('Hero Utama')
+            ->assertDontSee('Background kritis mencegah flash putih', false);
     }
 
     private function previousLink(string $url): string
