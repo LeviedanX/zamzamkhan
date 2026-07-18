@@ -1,6 +1,9 @@
-# Launcher server lokal PT Zam Zam Khan (PowerShell).
-# Mengaktifkan driver SQLite (pdo_sqlite) lalu menjalankan server.
+param(
+    [string]$HostAddress = '127.0.0.1',
+    [ValidateRange(1, 65535)]
+    [int]$Port = 8000
+)
+
+# Router PHP langsung menghindari overhead polling artisan serve pada Windows.
 Set-Location $PSScriptRoot
-$env:PHP_INI_SCAN_DIR = Join-Path $PSScriptRoot 'php-ini'
-Write-Host "[serve.ps1] SQLite driver diaktifkan dari: $env:PHP_INI_SCAN_DIR"
-php artisan serve @args
+php -S "${HostAddress}:${Port}" -t public scripts/dev-server.php

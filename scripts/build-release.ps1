@@ -39,7 +39,6 @@ Copy-Item -LiteralPath (Join-Path $root "bootstrap/cache/.gitignore") -Destinati
 
 Remove-Item -LiteralPath (Join-Path $stage "public/storage") -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath (Join-Path $stage "public/hot") -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath (Join-Path $stage "database/database.sqlite") -Force -ErrorAction SilentlyContinue
 
 $storagePlaceholders = @(
     "storage/app/.gitignore",
@@ -89,8 +88,7 @@ $forbidden = @(
     (Join-Path $stage "public/storage"),
     (Join-Path $stage "node_modules"),
     (Join-Path $stage "tests"),
-    (Join-Path $stage "references"),
-    (Join-Path $stage "database/database.sqlite")
+    (Join-Path $stage "references")
 )
 foreach ($path in $forbidden) {
     if (Test-Path $path) { throw "Artifact memuat path terlarang: $path" }

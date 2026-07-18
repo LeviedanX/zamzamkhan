@@ -12,9 +12,12 @@ abstract class TestCase extends BaseTestCase
     {
         $app = parent::createApplication();
 
-        if (config('database.default') !== 'sqlite' || config('database.connections.sqlite.database') !== ':memory:') {
+        $connection = (string) config('database.default');
+        $database = (string) config('database.connections.mysql.database');
+
+        if ($connection !== 'mysql' || ! str_ends_with($database, '_test')) {
             throw new \RuntimeException(
-                'Test dibatalkan: PHPUnit wajib memakai SQLite :memory:. Jalankan php artisan config:clear sebelum test.'
+                'Test dibatalkan: PHPUnit wajib memakai database MySQL khusus dengan akhiran _test. Jalankan php artisan config:clear sebelum test.'
             );
         }
 

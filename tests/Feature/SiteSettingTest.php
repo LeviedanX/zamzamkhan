@@ -195,7 +195,7 @@ class SiteSettingTest extends TestCase
         ]);
 
         $setting = SiteSetting::firstOrFail();
-        $this->assertSame([
+        $this->assertEquals([
             ['label' => 'Instagram', 'url' => 'https://instagram.com/zzk'],
             ['label' => 'LinkedIn', 'url' => 'https://linkedin.com/company/zzk'],
         ], $setting->social_links);

@@ -1,9 +1,4 @@
-@php
-    $latestArticles = collect();
-    if (\Illuminate\Support\Facades\Schema::hasTable('articles')) {
-        $latestArticles = \App\Models\Article::published()->with('category')->latestPublished()->take(3)->get();
-    }
-@endphp
+@php($latestArticles = $latestArticles ?? collect())
 
 @if ($latestArticles->isNotEmpty())
 @php($featured = $latestArticles->first())
@@ -36,17 +31,17 @@
         {{-- Grid: featured kiri + 2 sekunder kanan --}}
         <div class="mt-10 grid gap-6 lg:grid-cols-2">
             {{-- Featured --}}
-            <a href="{{ route('artikel.show', $featured->slug) }}" class="article-card article-card--featured reveal reveal-left group">
+            <a href="{{ route('artikel.show', $featured['slug']) }}" class="article-card article-card--featured reveal reveal-left group">
                 <div class="article-cover">
                     @include('partials.article-cover', ['article' => $featured])
                 </div>
                 <div class="article-card__body">
                     <div class="article-meta">
-                        @if ($featured->category)<span class="article-chip">{{ $featured->category->name }}</span>@endif
-                        <span class="article-date">{{ $featured->publishedDate() }}</span>
+                        @if ($featured['category_name'])<span class="article-chip">{{ $featured['category_name'] }}</span>@endif
+                        <span class="article-date">{{ $featured['published_date'] }}</span>
                     </div>
-                    <h3 class="article-card__title article-card__title--lg">{{ $featured->title }}</h3>
-                    @if ($featured->excerpt)<p class="article-card__excerpt">{{ $featured->excerpt }}</p>@endif
+                    <h3 class="article-card__title article-card__title--lg">{{ $featured['title'] }}</h3>
+                    @if ($featured['excerpt'])<p class="article-card__excerpt">{{ $featured['excerpt'] }}</p>@endif
                     <span class="article-readmore">Baca Artikel
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h15"/></svg>
                     </span>
@@ -56,16 +51,16 @@
             {{-- Sekunder --}}
             <div class="flex flex-col gap-6">
                 @foreach ($rest as $a)
-                    <a href="{{ route('artikel.show', $a->slug) }}" class="article-card article-card--row reveal reveal-right group">
+                    <a href="{{ route('artikel.show', $a['slug']) }}" class="article-card article-card--row reveal reveal-right group">
                         <div class="article-cover article-cover--sm">
                             @include('partials.article-cover', ['article' => $a])
                         </div>
                         <div class="article-card__body">
                             <div class="article-meta">
-                                @if ($a->category)<span class="article-chip">{{ $a->category->name }}</span>@endif
-                                <span class="article-date">{{ $a->publishedDate() }}</span>
+                                @if ($a['category_name'])<span class="article-chip">{{ $a['category_name'] }}</span>@endif
+                                <span class="article-date">{{ $a['published_date'] }}</span>
                             </div>
-                            <h3 class="article-card__title">{{ $a->title }}</h3>
+                            <h3 class="article-card__title">{{ $a['title'] }}</h3>
                             <span class="article-readmore">Baca Artikel
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h15"/></svg>
                             </span>

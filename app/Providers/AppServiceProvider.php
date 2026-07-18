@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Advantage;
 use App\Models\Agenda;
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\Client;
 use App\Models\Faq;
 use App\Models\HeroSection;
@@ -14,6 +15,7 @@ use App\Models\SiteSetting;
 use App\Models\Statistic;
 use App\Models\Testimonial;
 use App\Support\SafeUrl;
+use App\Support\SiteCache;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -23,8 +25,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    private const CACHE_KEY = 'site_content_v5';
-
     public function register(): void
     {
         //
@@ -57,7 +57,8 @@ class AppServiceProvider extends ServiceProvider
         $this->registerCacheFlush();
 
         // Request admin/aset tidak butuh override konten publik → hemat query, lebih cepat.
-        if (($this->app->runningInConsole() && ! $this->app->runningUnitTests()) || request()->is('admin/*')) {
+        if (($this->app->runningInConsole() && ! $this->app->runningUnitTests())
+            || request()->is('admin', 'admin/*', 'up', 'sitemap.xml', 'robots.txt')) {
             return;
         }
 
@@ -120,11 +121,13 @@ class AppServiceProvider extends ServiceProvider
     private function cachedSiteContent(): ?array
     {
         try {
-            if (! Schema::hasTable('site_settings')) {
-                return null;
-            }
+            return Cache::remember(SiteCache::CONTENT, now()->addHours(6), function () {
+                if (! Schema::hasTable('site_settings')) {
+                    return null;
+                }
 
-            return Cache::remember(self::CACHE_KEY, now()->addHours(6), fn () => $this->buildSiteContent());
+                return $this->buildSiteContent();
+            });
         } catch (\Throwable $e) {
             return null; // DB bermasalah → pakai config statis.
         }
@@ -211,14 +214,14 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Layanan unggulan (is_featured) tampil lebih dulu, lalu urutan tampil.
-        $services = Service::where('is_active', true)
+        $services = Service::query()
             ->orderByDesc('is_featured')
             ->orderBy('display_order')
             ->get();
         // Fallback statis hanya bila admin belum pernah mengelola layanan (tabel kosong).
         // Bila ada baris tetapi semua nonaktif → array kosong → section disembunyikan (hormati admin).
-        if (Service::exists()) {
-            $company['services'] = $services->map(fn ($x) => [
+        if ($services->isNotEmpty()) {
+            $company['services'] = $services->where('is_active', true)->map(fn ($x) => [
                 'icon' => $x->icon ?: 'halal',
                 'title' => $x->title,
                 'desc' => $x->summary ?: $x->description,
@@ -231,10 +234,10 @@ class AppServiceProvider extends ServiceProvider
             ])->all();
         }
 
-        $faqs = Faq::where('is_active', true)->orderBy('display_order')->get();
+        $faqs = Faq::orderBy('display_order')->get();
         // Sama seperti layanan: fallback statis hanya bila tabel FAQ benar-benar kosong.
-        if (Faq::exists()) {
-            $company['faq'] = $faqs->map(fn ($x) => [
+        if ($faqs->isNotEmpty()) {
+            $company['faq'] = $faqs->where('is_active', true)->map(fn ($x) => [
                 'q' => $x->question,
                 'a' => $x->answer,
             ])->all();
@@ -488,12 +491,21 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerCacheFlush(): void
     {
-        $models = [SiteSetting::class, HeroSection::class, Service::class, Faq::class, SeoSetting::class, Advantage::class, Statistic::class, Client::class, Testimonial::class, Agenda::class, Article::class];
-        $forget = fn () => Cache::forget(self::CACHE_KEY);
+        $models = [SiteSetting::class, HeroSection::class, Service::class, Faq::class, SeoSetting::class, Advantage::class, Statistic::class, Client::class, Testimonial::class, Agenda::class];
+        $forget = fn () => Cache::forget(SiteCache::CONTENT);
 
         foreach ($models as $model) {
             $model::saved($forget);
             $model::deleted($forget);
         }
+
+        $forgetArticles = function (): void {
+            Cache::forget(SiteCache::CONTENT);
+            Cache::forget(SiteCache::HOME_ARTICLES);
+        };
+        Article::saved($forgetArticles);
+        Article::deleted($forgetArticles);
+        ArticleCategory::saved(fn () => Cache::forget(SiteCache::HOME_ARTICLES));
+        ArticleCategory::deleted(fn () => Cache::forget(SiteCache::HOME_ARTICLES));
     }
 }

@@ -1,8 +1,7 @@
 @echo off
 REM Launcher server lokal PT Zam Zam Khan.
-REM Mengaktifkan driver SQLite (pdo_sqlite) via PHP_INI_SCAN_DIR lalu menjalankan server.
 setlocal
 cd /d "%~dp0"
-set "PHP_INI_SCAN_DIR=%~dp0php-ini"
-echo [serve.bat] SQLite driver diaktifkan dari: %PHP_INI_SCAN_DIR%
-php artisan serve %*
+set "ZZK_PORT=%~1"
+if not defined ZZK_PORT set "ZZK_PORT=8000"
+php -S 127.0.0.1:%ZZK_PORT% -t public scripts/dev-server.php

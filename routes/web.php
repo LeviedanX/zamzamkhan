@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\StatisticController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\VisitorAnalyticsController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\HomeController;
 use App\Http\Middleware\AuditAdminMutation;
 use App\Http\Middleware\ConcealUnauthenticatedAdmin;
 use App\Http\Middleware\EnsureAdminIsActive;
@@ -36,7 +37,7 @@ use App\Models\SiteSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('home'))->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 // Artikel & Insight (public)
 Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index');

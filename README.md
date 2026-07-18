@@ -52,13 +52,13 @@ Model, migration, atau tabel legacy dapat tetap berada di source code untuk komp
 
 - Laravel 13 dan PHP 8.3+.
 - Blade, Vite 8, Tailwind CSS 4, dan Alpine.js.
-- MySQL untuk development/deployment; SQLite untuk testing dan skenario lokal tertentu.
+- MySQL untuk development, testing, dan deployment.
 - PHPUnit 12.
 - OpenSpout untuk export spreadsheet.
 
 ### Instalasi Lokal
 
-Prasyarat: PHP 8.3+ dengan extension database yang sesuai, Composer, Node.js, npm, dan MySQL atau SQLite.
+Prasyarat: PHP 8.3+ dengan extension `pdo_mysql`, Composer, Node.js, npm, dan MySQL.
 
 ```bash
 git clone https://github.com/LeviedanX/zamzamkhan.git
@@ -81,7 +81,7 @@ Untuk frontend hot reload, jalankan pada terminal terpisah:
 npm run dev
 ```
 
-`serve.bat` dan `serve.ps1` adalah helper lokal yang membutuhkan folder `php-ini`; folder tersebut sengaja tidak disimpan di Git.
+`serve.bat` dan `serve.ps1` adalah helper untuk menjalankan server lokal dari root project.
 
 ### Akun Admin
 
@@ -94,7 +94,14 @@ php artisan test
 npm run build
 ```
 
-Testing menggunakan SQLite in-memory sesuai `phpunit.xml`, sehingga tidak mengubah database development.
+Testing menggunakan database MySQL khusus `zzk_web_test` sesuai `phpunit.xml`. Siapkan sekali dengan akun administrator MySQL, lalu beri user aplikasi akses ke database tersebut:
+
+```sql
+CREATE DATABASE zzk_web_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON zzk_web_test.* TO 'user_aplikasi'@'host_aplikasi';
+```
+
+Gunakan credential MySQL yang sama di `.env`. Pengaman pada `tests/TestCase.php` membatalkan test bila nama database tidak berakhiran `_test`, sehingga database development atau production tidak tersentuh oleh `RefreshDatabase`.
 
 ### Struktur Direktori
 
@@ -192,13 +199,13 @@ Legacy models, migrations, or tables may remain for compatibility and rollback, 
 
 - Laravel 13 and PHP 8.3+.
 - Blade, Vite 8, Tailwind CSS 4, and Alpine.js.
-- MySQL for development/deployment; SQLite for tests and selected local scenarios.
+- MySQL for development, testing, and deployment.
 - PHPUnit 12.
 - OpenSpout for spreadsheet exports.
 
 ### Local Installation
 
-Requirements: PHP 8.3+ with the required database extension, Composer, Node.js, npm, and MySQL or SQLite.
+Requirements: PHP 8.3+ with the `pdo_mysql` extension, Composer, Node.js, npm, and MySQL.
 
 ```bash
 git clone https://github.com/LeviedanX/zamzamkhan.git
@@ -221,7 +228,7 @@ For frontend hot reload, run this in a separate terminal:
 npm run dev
 ```
 
-`serve.bat` and `serve.ps1` are local helpers that require a `php-ini` directory; that directory is intentionally excluded from Git.
+`serve.bat` and `serve.ps1` are helpers for starting the local server from the project root.
 
 ### Admin Account
 
@@ -234,7 +241,14 @@ php artisan test
 npm run build
 ```
 
-Tests use the SQLite in-memory database configured in `phpunit.xml`, so they do not modify the development database.
+Tests use the dedicated MySQL database `zzk_web_test` configured in `phpunit.xml`. Create it once with a MySQL administrator account, then grant the application user access:
+
+```sql
+CREATE DATABASE zzk_web_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON zzk_web_test.* TO 'application_user'@'application_host';
+```
+
+Use the same MySQL credentials in `.env`. The guard in `tests/TestCase.php` aborts unless the database name ends with `_test`, preventing `RefreshDatabase` from touching development or production data.
 
 ### Deployment
 

@@ -19,19 +19,24 @@ class TrackWebVisit
         }
 
         $userAgent = (string) $request->userAgent();
-        try {
-            WebVisit::create([
-                // Session di-hash agar laporan tidak menyimpan IP atau identifier mentah.
-                'visitor_key' => hash_hmac('sha256', $request->session()->getId(), (string) config('app.key')),
-                'path' => mb_substr('/'.ltrim($request->path(), '/'), 0, 500),
-                'route_name' => mb_substr((string) $request->route()?->getName(), 0, 160) ?: null,
-                'referrer_host' => $this->referrerHost($request),
-                'device_type' => $this->deviceType($userAgent),
-                'visited_at' => now(),
-            ]);
-        } catch (QueryException) {
-            // Telemetri tidak boleh membuat website publik gagal ketika tabel belum siap.
-        }
+        $attributes = [
+            // Session di-hash agar laporan tidak menyimpan IP atau identifier mentah.
+            'visitor_key' => hash_hmac('sha256', $request->session()->getId(), (string) config('app.key')),
+            'path' => mb_substr('/'.ltrim($request->path(), '/'), 0, 500),
+            'route_name' => mb_substr((string) $request->route()?->getName(), 0, 160) ?: null,
+            'referrer_host' => $this->referrerHost($request),
+            'device_type' => $this->deviceType($userAgent),
+            'visited_at' => now(),
+        ];
+
+        // Simpan setelah response dikirim agar telemetri tidak menahan render publik.
+        defer(function () use ($attributes): void {
+            try {
+                WebVisit::create($attributes);
+            } catch (QueryException) {
+                // Telemetri tidak boleh membuat website publik gagal ketika tabel belum siap.
+            }
+        }, 'track-web-visit:'.$attributes['visitor_key'].':'.$attributes['path']);
 
         return $response;
     }

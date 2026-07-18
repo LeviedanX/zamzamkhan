@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\ArticleCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -30,6 +31,25 @@ class ArticleTest extends TestCase
             'status' => 'published',
             'published_at' => now(),
         ], $overrides));
+    }
+
+    public function test_artikel_homepage_tidak_mengulang_query_setelah_cache_hangat(): void
+    {
+        $this->makeArticle();
+        $this->get(route('home'))->assertOk()->assertSee('Judul Artikel Uji');
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->get(route('home'))->assertOk()->assertSee('Judul Artikel Uji');
+
+        $articleQueries = collect(DB::getQueryLog())
+            ->pluck('query')
+            ->filter(fn (string $query) => str_contains(strtolower($query), 'from `articles`'));
+
+        DB::disableQueryLog();
+
+        $this->assertCount(0, $articleQueries);
     }
 
     private function admin(): Admin

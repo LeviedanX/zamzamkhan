@@ -227,7 +227,7 @@ class ProfilIdentitasTest extends TestCase
             ]))
             ->assertRedirect();
 
-        $this->assertSame([
+        $this->assertEquals([
             ['label' => 'Instagram', 'url' => 'https://instagram.com/zzk'],
             ['label' => 'TikTok', 'url' => 'https://tiktok.com/@zzk'],
         ], SiteSetting::firstOrFail()->social_links);
