@@ -12,12 +12,16 @@ use Illuminate\Support\Facades\Storage;
 
 class ScanSecurityIntegrity extends Command
 {
-    protected $signature = 'security:scan {--json : Keluarkan hasil sebagai JSON}';
+    protected $signature = 'security:scan
+                            {--production : Terapkan seluruh pemeriksaan khusus production}
+                            {--json : Keluarkan hasil sebagai JSON}';
 
     protected $description = 'Deteksi webshell/upload berbahaya, SEO-spam judol, dan stored injection pada konten CMS.';
 
     /** @var list<array{type:string, location:string, detail:string}> */
     private array $findings = [];
+
+    private bool $developmentMarkerIgnored = false;
 
     public function handle(): int
     {
@@ -29,10 +33,15 @@ class ScanSecurityIntegrity extends Command
         if ($this->option('json')) {
             $this->line(json_encode([
                 'ok' => $this->findings === [],
+                'production_mode' => $this->productionMode(),
+                'development_marker_ignored' => $this->developmentMarkerIgnored,
                 'findings' => $this->findings,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         } elseif ($this->findings === []) {
             $this->info('Security scan lulus: tidak ada indikator webshell, sisipan aktif, atau spam judol.');
+            if ($this->developmentMarkerIgnored) {
+                $this->warn('Catatan development: public/hot diizinkan agar Vite lokal tetap dapat digunakan.');
+            }
         } else {
             $this->table(
                 ['Jenis', 'Lokasi', 'Detail'],
@@ -144,9 +153,22 @@ class ScanSecurityIntegrity extends Command
 
     private function checkDevelopmentMarker(): void
     {
-        if (file_exists(public_path('hot'))) {
-            $this->add('development-marker', 'public/hot', 'Marker Vite development tidak boleh ada pada production.');
+        if (! file_exists(public_path('hot'))) {
+            return;
         }
+
+        if (! $this->productionMode()) {
+            $this->developmentMarkerIgnored = true;
+
+            return;
+        }
+
+        $this->add('development-marker', 'public/hot', 'Marker Vite development tidak boleh ada pada production.');
+    }
+
+    private function productionMode(): bool
+    {
+        return (bool) $this->option('production') || app()->environment('production');
     }
 
     private function add(string $type, string $location, string $detail): void

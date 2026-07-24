@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BusinessCategory extends Model
 {
     protected $guarded = [];
+
     protected $casts = ['is_active' => 'boolean'];
 
     public function applications(): HasMany

@@ -4,8 +4,8 @@ namespace App\Support;
 
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Border;
-use OpenSpout\Common\Entity\Style\BorderPart;
 use OpenSpout\Common\Entity\Style\BorderName;
+use OpenSpout\Common\Entity\Style\BorderPart;
 use OpenSpout\Common\Entity\Style\BorderStyle;
 use OpenSpout\Common\Entity\Style\BorderWidth;
 use OpenSpout\Common\Entity\Style\CellAlignment;
@@ -40,8 +40,8 @@ final class ReportExcelWriter
     private const MAX_WIDTH = 46.0;
 
     /**
-     * @param  list<string>       $headers
-     * @param  list<list<string>> $rows
+     * @param  list<string>  $headers
+     * @param  list<list<string>>  $rows
      */
     public static function write(string $path, string $title, string $subtitle, array $headers, array $rows): void
     {

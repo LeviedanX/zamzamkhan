@@ -33,57 +33,51 @@ class ArticleSeeder extends Seeder
                 'title' => 'Perbedaan Sertifikat Halal Self Declare dan Reguler',
                 'slug' => 'perbedaan-sertifikat-halal-self-declare-dan-reguler',
                 'category' => 'sertifikasi-halal',
-                'excerpt' => 'Kenali perbedaan mendasar antara jalur sertifikasi halal self declare dan reguler agar pelaku usaha dapat memilih skema yang paling sesuai dengan kondisi produknya.',
+                'excerpt' => 'Self Declare dan reguler memiliki kriteria serta proses pemeriksaan yang berbeda. Kenali faktor penentunya sebelum mengajukan sertifikasi halal.',
                 'meta_title' => 'Perbedaan Sertifikat Halal Self Declare dan Reguler',
                 'meta_description' => 'Panduan memahami perbedaan sertifikat halal self declare dan reguler untuk pelaku usaha dan UMKM di Malang.',
                 'content' => <<<'TXT'
-Sertifikasi halal menjadi salah satu kebutuhan penting bagi pelaku usaha, khususnya di sektor makanan dan minuman. Secara umum, terdapat dua jalur yang sering ditemui, yaitu jalur self declare dan jalur reguler. Memahami perbedaan keduanya membantu pelaku usaha memilih skema yang paling sesuai dengan kondisi produk dan proses produksinya.
+Self Declare ditujukan bagi pelaku UMK yang produk, bahan, dan proses produksinya memenuhi kriteria skema tersebut. Pelaku usaha perlu memiliki NIB, menggunakan bahan yang dipastikan halal, dan menjalankan proses produksi sederhana.
 
-Jalur self declare umumnya ditujukan untuk produk dengan proses sederhana dan bahan yang sudah jelas kehalalannya. Skema ini menekankan pernyataan pelaku usaha atas kehalalan produk dengan pendampingan pihak yang berwenang. Karena karakteristiknya, jalur ini biasanya lebih ringkas untuk usaha berskala kecil.
+Pada jalur ini, Pendamping Proses Produk Halal melakukan verifikasi dan validasi. Data produk, bahan, pemasok, proses produksi, serta dokumen Sistem Jaminan Produk Halal perlu disiapkan sebelum pengajuan.
 
-Sementara itu, jalur reguler umumnya diperuntukkan bagi produk dengan proses yang lebih kompleks, seperti restoran, katering, kafe, hingga produksi skala besar. Pada jalur ini, pemeriksaan terhadap bahan dan proses produksi dilakukan secara lebih menyeluruh sesuai ketentuan yang berlaku.
+Jalur reguler digunakan untuk produk yang masih memerlukan pemeriksaan atau pengujian kehalalan. Prosesnya melibatkan Lembaga Pemeriksa Halal dan auditor halal.
 
-Pemilihan jalur yang tepat sebaiknya disesuaikan dengan jenis produk, bahan yang digunakan, serta kapasitas usaha. Konsultasi awal dapat membantu pelaku usaha mengidentifikasi skema yang paling relevan sebelum memulai proses.
-
-PT Zam Zam Khan mendampingi pelaku usaha di Malang untuk memahami kebutuhan sertifikasi halal dan menyiapkan dokumen yang diperlukan sesuai ruang lingkup layanan.
+Skema tidak ditentukan hanya dari ukuran usaha. Jenis produk, bahan, fasilitas, dan proses produksi juga perlu diperiksa. PT Zam Zam Khan dapat membantu pemeriksaan awal dokumen serta menjelaskan jalur pengajuan yang sesuai dengan kondisi usaha.
 TXT,
             ],
             [
                 'title' => 'Panduan Pengurusan NIB untuk UMKM di Malang',
                 'slug' => 'panduan-pengurusan-nib-untuk-umkm-di-malang',
                 'category' => 'legalitas-usaha',
-                'excerpt' => 'Nomor Induk Berusaha (NIB) adalah identitas resmi pelaku usaha. Simak gambaran umum manfaat dan tahapan pendampingannya untuk UMKM.',
+                'excerpt' => 'NIB merupakan identitas resmi pelaku usaha. Data usaha, KBLI, dan tingkat risiko kegiatan menentukan kebutuhan izin berikutnya.',
                 'meta_title' => 'Panduan Pengurusan NIB untuk UMKM di Malang',
                 'meta_description' => 'Gambaran umum manfaat dan tahapan pengurusan NIB untuk UMKM serta pelaku usaha di Malang.',
                 'content' => <<<'TXT'
-Nomor Induk Berusaha atau NIB merupakan identitas resmi bagi pelaku usaha sekaligus dasar legalitas dalam menjalankan kegiatan usaha. Bagi UMKM, keberadaan NIB memberikan kejelasan status usaha dan mempermudah akses terhadap berbagai kebutuhan administrasi selanjutnya.
+Nomor Induk Berusaha atau NIB merupakan identitas resmi untuk memulai atau menjalankan usaha di Indonesia. Pengajuannya dilakukan melalui sistem OSS.
 
-Secara umum, pengurusan NIB dimulai dari penyiapan data usaha dan dokumen dasar pelaku usaha. Kelengkapan data ini penting agar identitas usaha yang tercatat sesuai dengan kondisi sebenarnya. Setelah data siap, proses pengajuan dapat dilanjutkan sesuai ketentuan yang berlaku.
+Sebelum mendaftar, pelaku usaha perlu menyiapkan identitas, alamat, kegiatan usaha, lokasi, dan data pendukung lain. Pemilihan KBLI harus sesuai dengan kegiatan yang benar-benar dijalankan karena data tersebut memengaruhi klasifikasi usaha.
 
-Bagi pelaku usaha yang baru memulai, tahap identifikasi kebutuhan menjadi langkah awal yang membantu menentukan bentuk usaha dan ruang lingkup kegiatan. Dengan begitu, legalitas yang dimiliki dapat menyesuaikan rencana pengembangan usaha ke depan.
+Perizinan berusaha menggunakan pendekatan berbasis risiko. Tingkat risiko kegiatan menentukan apakah NIB sudah mencukupi atau masih ada sertifikat standar maupun izin lain yang harus dipenuhi.
 
-Memiliki NIB juga menjadi bagian dari upaya membuat usaha lebih tertib secara administratif. Hal ini dapat mendukung kepercayaan mitra maupun pelanggan terhadap usaha yang dijalankan.
-
-PT Zam Zam Khan membantu pendampingan pengurusan NIB bagi UMKM dan pelaku usaha di Malang, mulai dari identifikasi kebutuhan hingga penyiapan dokumen sesuai ruang lingkup layanan.
+Periksa kembali seluruh data sebelum pengajuan agar identitas usaha tidak keliru. PT Zam Zam Khan dapat membantu mengidentifikasi kebutuhan, menyiapkan data, dan mendampingi proses pengurusan NIB sesuai ruang lingkup layanan.
 TXT,
             ],
             [
                 'title' => 'Mengapa Merek Dagang dan HAKI Penting untuk Usaha Anda',
                 'slug' => 'mengapa-merek-dagang-dan-haki-penting-untuk-usaha-anda',
                 'category' => 'haki',
-                'excerpt' => 'Perlindungan merek dan hak kekayaan intelektual membantu menjaga identitas serta nilai usaha Anda dalam jangka panjang.',
+                'excerpt' => 'Pendaftaran merek memberi dasar perlindungan hukum atas identitas produk atau jasa. Pemeriksaan awal membantu mengurangi risiko penolakan.',
                 'meta_title' => 'Mengapa Merek Dagang dan HAKI Penting untuk Usaha',
                 'meta_description' => 'Alasan pentingnya perlindungan merek dagang dan HAKI bagi pelaku usaha, serta pendampingannya di Malang.',
                 'content' => <<<'TXT'
-Merek dagang merupakan salah satu identitas yang membedakan produk atau layanan sebuah usaha dari yang lain. Seiring pertumbuhan usaha, merek menjadi aset yang memiliki nilai tersendiri karena melekat pada reputasi dan kepercayaan pelanggan.
+Merek membedakan barang atau jasa sebuah usaha dari milik pihak lain. Nama, logo, atau unsur pembeda yang digunakan dalam perdagangan belum otomatis memberi hak eksklusif kepada pemiliknya.
 
-Perlindungan terhadap merek melalui hak kekayaan intelektual (HAKI) membantu menjaga identitas usaha agar tidak digunakan pihak lain tanpa hak. Langkah ini penting sebagai bagian dari strategi menjaga keberlanjutan dan nilai usaha dalam jangka panjang.
+Di Indonesia, hak eksklusif atas merek diperoleh melalui pendaftaran. Karena itu, pemeriksaan awal perlu dilakukan sebelum nama atau logo dipakai lebih luas.
 
-Selain merek, HAKI juga dapat mencakup perlindungan atas karya, desain, maupun aset intelektual lain yang dimiliki usaha. Dengan memahami cakupan ini, pelaku usaha dapat menentukan aset mana yang perlu diprioritaskan untuk dilindungi.
+Pendaftaran tetap melalui proses pemeriksaan. Persamaan dengan merek yang sudah terdaftar, pilihan kelas yang tidak tepat, atau unsur yang tidak dapat didaftarkan dapat memengaruhi hasil permohonan.
 
-Proses pendaftaran umumnya diawali dengan identifikasi aset yang akan dilindungi dan penyiapan dokumen pendukung. Konsultasi awal membantu pelaku usaha memahami langkah yang paling sesuai dengan kebutuhannya.
-
-PT Zam Zam Khan mendampingi pelaku usaha di Malang dalam memahami kebutuhan perlindungan merek dan HAKI serta menyiapkan dokumen sesuai ruang lingkup layanan.
+Istilah kekayaan intelektual juga mencakup objek lain, sehingga jenis perlindungannya perlu disesuaikan dengan aset yang dimiliki. PT Zam Zam Khan dapat membantu penelusuran awal, pemilihan kelas, dan penyiapan dokumen permohonan merek sesuai ruang lingkup layanan.
 TXT,
             ],
         ];

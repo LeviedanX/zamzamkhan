@@ -34,17 +34,11 @@
                 Mengapa Memilih PT Zam Zam Khan?
             </h2>
             <p class="mt-4 max-w-xl leading-relaxed text-navy-600 dark:text-navy-300">
-                PT Zam Zam Khan menghadirkan pendampingan yang jelas, terarah, dan komunikatif agar kebutuhan halal, legalitas, sertifikasi, dan identitas usaha dapat berjalan lebih tertata.
+                Klien mendapat penjelasan kebutuhan, pemeriksaan dokumen, dan arahan tahap berikutnya sesuai layanan yang dipilih.
             </p>
 
-            {{-- value statement --}}
-            <div class="mt-5 flex items-start gap-3 rounded-xl border border-emerald-brand/15 bg-emerald-brand/4 px-4 py-3 dark:border-emerald-brand/25 dark:bg-emerald-brand/10">
-                <svg class="mt-0.5 h-5 w-5 flex-none text-emerald-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p class="text-sm font-medium text-navy-700 dark:text-navy-200">Bukan sekadar konsultasi, tetapi pendampingan yang membantu pelaku usaha memahami kebutuhan, menyiapkan dokumen, dan mengambil langkah yang tepat.</p>
-            </div>
-
             {{-- 6 keunggulan --}}
-            <div class="advantage-list mt-6 grid gap-3.5 sm:grid-cols-2">
+            <div class="advantage-list mt-5 grid gap-3.5 sm:grid-cols-2">
                 @foreach ($advantages as $a)
                     <div class="advantage-card group flex flex-col rounded-2xl border border-navy-100 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-emerald-brand/40 hover:shadow-lg hover:shadow-navy-900/10 sm:p-5 dark:border-white/10 dark:bg-white/5 dark:hover:border-tosca-400/40">
                         <span class="advantage-card-icon flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-emerald-brand/10 text-emerald-brand transition-colors group-hover:bg-emerald-brand group-hover:text-white dark:bg-emerald-brand/20 dark:text-tosca-400 dark:group-hover:bg-tosca-400 dark:group-hover:text-white">

@@ -23,8 +23,7 @@
         <div class="reveal mx-auto max-w-2xl text-center">
             <span class="eyebrow">Layanan Utama</span>
             <h2 class="mt-3 text-3xl font-bold text-navy-900 sm:text-4xl dark:text-white">Solusi Legalitas &amp; Sertifikasi untuk Usaha Anda</h2>
-            <p class="mt-4 text-navy-600 dark:text-navy-300">Pilih layanan pendampingan yang sesuai dengan kebutuhan usaha Anda — mulai dari sertifikasi halal hingga desain identitas produk.</p>
-            <p class="service-section-note mt-4">Setiap layanan memiliki detail dan alur pendampingan yang dapat dibaca melalui tombol Detail.</p>
+            <p class="mt-4 text-navy-600 dark:text-navy-300">Pilih layanan yang dibutuhkan. Persyaratan dan tahap kerja tersedia pada menu Detail.</p>
         </div>
 
         <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

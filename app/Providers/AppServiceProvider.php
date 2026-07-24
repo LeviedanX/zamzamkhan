@@ -51,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->guardTestingDatabase();
         $this->enforceHttps();
 
         // Selalu daftarkan: simpan/hapus konten di admin → bersihkan cache (perubahan langsung tampil).
@@ -65,6 +66,28 @@ class AppServiceProvider extends ServiceProvider
         $company = $this->cachedSiteContent();
         if ($company) {
             config(['company' => $this->presentForRequest($company)]);
+        }
+    }
+
+    /**
+     * Perintah Artisan dengan --env=testing tidak membaca phpunit.xml.
+     * Batalkan lebih awal bila environment testing masih menunjuk ke database
+     * development/production agar migrate:fresh tidak dapat menghapus data asli.
+     */
+    private function guardTestingDatabase(): void
+    {
+        if (! $this->app->runningInConsole() || ! $this->app->environment('testing')) {
+            return;
+        }
+
+        $connection = (string) config('database.default');
+        $database = (string) config("database.connections.{$connection}.database");
+
+        if (! str_ends_with($database, '_test')) {
+            throw new \RuntimeException(
+                'Environment testing wajib memakai database dengan akhiran _test. '
+                .'Jangan jalankan perintah database testing pada database utama.'
+            );
         }
     }
 

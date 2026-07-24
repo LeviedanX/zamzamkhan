@@ -16,12 +16,12 @@
     <div class="container-x relative">
         {{-- Header (center) --}}
         <div class="testimonial-header reveal mx-auto max-w-2xl text-center">
-            <span class="eyebrow">Social Proof</span>
+            <span class="eyebrow">Dokumentasi</span>
             <h2 class="mt-3 font-display text-3xl font-extrabold leading-tight text-navy-900 sm:text-4xl dark:text-white">
-                Testimoni &amp; Dokumentasi Pendampingan
+                Dokumentasi Sertifikasi Halal
             </h2>
             <p class="mt-4 leading-relaxed text-navy-600 dark:text-navy-300">
-                Dokumentasi penyerahan sertifikat halal dan pendampingan usaha bersama klien PT Zam Zam Khan.
+                Momen penyerahan sertifikat dan label halal bersama pelaku usaha serta mitra PT Zam Zam Khan.
             </p>
         </div>
 
@@ -45,9 +45,6 @@
                             </span>
                         </div>
                         <div class="flex flex-1 flex-col p-5">
-                            <div class="mb-1.5 text-tosca-400">
-                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M7.17 6A5.17 5.17 0 002 11.17V18h6.83v-6.83H5.6A3.6 3.6 0 019.2 7.6L7.17 6zm9.6 0a5.17 5.17 0 00-5.17 5.17V18H18.4v-6.83h-3.23a3.6 3.6 0 013.6-3.57L16.77 6z"/></svg>
-                            </div>
                             <h3 class="font-display text-base font-bold leading-snug text-navy-900 line-clamp-1 dark:text-white">{{ $t['title'] }}</h3>
                             <p class="mt-1.5 text-sm leading-relaxed text-navy-600 line-clamp-2 dark:text-navy-300">{{ $t['caption'] }}</p>
                         </div>

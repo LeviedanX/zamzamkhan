@@ -15,13 +15,13 @@ return [
     'email' => 'pt.zamzamkhan@gmail.com',
     'address' => 'Jl. MT. Haryono Gang 6B No.949, Dinoyo, Kec. Lowokwaru, Kota Malang, Jawa Timur 65144',
     'operating_hours' => 'Senin–Jumat, 08.00–16.00 WIB',
-    'about' => "PT Zam Zam Khan hadir sebagai mitra pendamping bagi pelaku usaha yang ingin menata legalitas, sertifikasi, dan identitas produknya secara lebih profesional. Kami membantu proses sertifikasi halal, legalitas usaha, BPOM, HAKI, NPWP, akta pendirian, perpajakan, hingga desain logo dan label kemasan.\nDengan pendekatan yang terarah, kami mendampingi UMKM, restoran, catering, produsen makanan, dan badan usaha agar memiliki dokumen usaha yang lebih tertata, legal, dan siap bersaing di pasar.",
-    'vision' => 'Jadikan bisnis Anda lebih berkembang dan berkah dengan layanan konsultasi bisnis halal dari PT Zam Zam Khan. Kami hadir untuk memberikan solusi strategis sesuai prinsip syariah agar setiap langkah bisnis berjalan tepat, aman, halal, dan berkelanjutan.',
-    'mission' => "Membantu pelaku usaha, baik UMK maupun non-UMK, agar berkembang secara legal dan mampu bersaing di dunia usaha.\nMemberikan pendampingan mulai dari tahap perencanaan jenis usaha dan pengembangan branding.\nMembantu proses perizinan dan kebutuhan legalitas usaha secara terarah agar usaha dapat tumbuh dan bersaing.",
-    'maps_url' => 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode('Jl. MT. Haryono Gang 6B No.949, Dinoyo, Lowokwaru, Kota Malang'),
+    'about' => "PT Zam Zam Khan menangani sertifikasi halal, legalitas usaha, BPOM, HAKI, NPWP, akta pendirian, perpajakan, serta desain logo dan label kemasan.\nLayanan tersedia bagi UMKM, usaha kuliner, produsen, dan badan usaha melalui konsultasi di kantor maupun WhatsApp.",
+    'vision' => 'Menjadi mitra konsultasi bisnis halal yang membantu pelaku usaha membangun usaha yang legal, aman, dan berkelanjutan sesuai prinsip syariah.',
+    'mission' => "Mendampingi UMK dan non-UMK dalam menata legalitas usaha.\nMembantu perencanaan jenis usaha serta pengembangan merek dan kemasan.\nMendukung pengurusan izin, sertifikasi, dan administrasi usaha sesuai kebutuhan.",
+    'maps_url' => 'https://www.google.com/maps/search/?api=1&query='.rawurlencode('Jl. MT. Haryono Gang 6B No.949, Dinoyo, Lowokwaru, Kota Malang'),
     // Endpoint embed final. URL gaya lama `?output=embed` di-redirect Google dengan
     // X-Frame-Options: SAMEORIGIN sehingga peta diblokir browser.
-    'maps_embed' => 'https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s' . urlencode('Jl. MT Haryono Gang 6B No.949, Dinoyo, Lowokwaru, Kota Malang, Jawa Timur'),
+    'maps_embed' => 'https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s'.urlencode('Jl. MT Haryono Gang 6B No.949, Dinoyo, Lowokwaru, Kota Malang, Jawa Timur'),
     'whatsapp' => "https://wa.me/{$waNumber}?text={$waText}",
 
     'socials' => [
@@ -37,7 +37,7 @@ return [
         ['label' => 'Keunggulan', 'anchor' => '#keunggulan'],
         ['label' => 'Artikel', 'anchor' => '#artikel'],
         ['label' => 'Agenda', 'anchor' => '#agenda'],
-        ['label' => 'Testimoni', 'anchor' => '#testimoni'],
+        ['label' => 'Dokumentasi', 'anchor' => '#testimoni'],
         ['label' => 'FAQ', 'anchor' => '#faq'],
         ['label' => 'Kontak', 'anchor' => '#kontak'],
     ],
@@ -72,11 +72,12 @@ return [
     ],
 
     'advantages' => [
-        'Pendampingan dari tahap awal hingga proses selesai sesuai ruang lingkup layanan.',
-        'Cocok untuk UMKM, restoran, catering, cafe, produsen makanan, dan pelaku usaha lainnya.',
-        'Informasi layanan disampaikan secara jelas dan terarah.',
-        'Membantu usaha menjadi lebih tertib secara legalitas dan administrasi.',
-        'Mendukung peningkatan nilai jual melalui legalitas, sertifikasi, dan identitas kemasan.',
+        ['icon' => 'clipboard', 'title' => 'Alur Kerja Sejak Awal', 'text' => 'Kebutuhan dan dokumen diperiksa sebelum proses layanan dimulai.'],
+        ['icon' => 'chat', 'title' => 'Informasi Mudah Dipahami', 'text' => 'Persyaratan, tahapan, dan tindak lanjut dijelaskan dengan bahasa yang jelas.'],
+        ['icon' => 'users', 'title' => 'UMKM dan Badan Usaha', 'text' => 'Layanan tersedia untuk usaha kuliner, produsen, UMKM, dan badan usaha.'],
+        ['icon' => 'shield', 'title' => 'Dokumen Lebih Tertib', 'text' => 'Administrasi legalitas dan sertifikasi disiapkan sesuai layanan yang dipilih.'],
+        ['icon' => 'star', 'title' => 'Mendukung Kesiapan Produk', 'text' => 'Halal, BPOM, HAKI, dan identitas kemasan membantu memperkuat kesiapan produk.'],
+        ['icon' => 'pin', 'title' => 'Kantor di Kota Malang', 'text' => 'Konsultasi dapat dilakukan melalui WhatsApp atau kunjungan ke kantor di Dinoyo.'],
     ],
 
     'stats' => [
@@ -86,20 +87,20 @@ return [
         ['value' => 'Malang', 'label' => 'Basis Layanan Konsultasi'],
     ],
 
-    // Testimoni / dokumentasi pendampingan (slider). File di public/images/testimonials/.
-    // Untuk mengubah: edit array ini (img, title, service, caption). Alt otomatis dari title+caption.
+    // Dokumentasi sertifikasi halal (slider). File di public/images/testimonials/.
+    // Nama usaha hanya dicantumkan jika identitasnya terbaca jelas pada foto.
     'testimonials' => [
-        ['img' => 'testi1.jpeg',  'title' => 'Hotel Santika Premiere Malang', 'service' => 'Sertifikasi Halal',  'caption' => 'Dokumentasi pendampingan dan penyerahan sertifikat halal untuk mendukung layanan usaha yang lebih terpercaya.'],
-        ['img' => 'testi2.jpeg',  'title' => 'Dokumentasi Klien Hospitality', 'service' => 'Sertifikasi Halal',  'caption' => 'Pendampingan kebutuhan sertifikasi halal untuk pelaku usaha dan layanan hospitality.'],
-        ['img' => 'testi3.jpeg',  'title' => 'Geprek Express Saiki',          'service' => 'Sertifikasi Halal',  'caption' => 'Penyerahan sertifikat halal sebagai penguatan kepercayaan konsumen terhadap produk kuliner.'],
-        ['img' => 'testi4.jpeg',  'title' => 'Malang Sari Camilan',           'service' => 'Sertifikasi Halal',  'caption' => 'Pendampingan sertifikasi halal untuk pelaku usaha makanan dan camilan.'],
-        ['img' => 'testi5.jpeg',  'title' => 'Esesa Cookies',                 'service' => 'Sertifikasi Halal',  'caption' => 'Dokumentasi penyerahan sertifikat halal kepada pelaku usaha produk cookies.'],
-        ['img' => 'testi6.jpeg',  'title' => 'UMKM Kuliner Malang',           'service' => 'Sertifikasi Halal',  'caption' => 'Pendampingan dokumen halal bagi pelaku usaha kuliner agar proses lebih terarah.'],
-        ['img' => 'testi7.jpeg',  'title' => 'Pelaku Usaha Makanan',          'service' => 'Sertifikasi Halal',  'caption' => 'Penyerahan dokumen dan label halal sebagai bagian dari penguatan legalitas produk.'],
-        ['img' => 'testi8.jpeg',  'title' => 'Klien Produk Kemasan',          'service' => 'Halal & Legalitas',  'caption' => 'Pendampingan kebutuhan dokumen usaha dan sertifikasi produk.'],
-        ['img' => 'testi9.jpeg',  'title' => 'Dokumentasi Pendampingan UMKM', 'service' => 'Sertifikasi Halal',  'caption' => 'Momen pendampingan dan penyerahan sertifikat halal kepada pelaku UMKM.'],
-        ['img' => 'testi10.jpeg', 'title' => 'Pelaku Usaha Lokal',            'service' => 'Sertifikasi Halal',  'caption' => 'Pendampingan proses sertifikasi agar produk lebih siap dan dipercaya pelanggan.'],
-        ['img' => 'testi11.jpeg', 'title' => 'Klien PT Zam Zam Khan',         'service' => 'Sertifikasi Halal',  'caption' => 'Dokumentasi penyerahan sertifikat halal bersama tim pendamping.'],
+        ['img' => 'testi1.jpeg', 'title' => 'Penyerahan Sertifikat dan Label Halal', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi penyerahan dokumen sertifikat serta label halal kepada pelaku usaha.', 'alt' => 'Penyerahan sertifikat dan label halal kepada pelaku usaha'],
+        ['img' => 'testi2.jpeg', 'title' => 'Serah Terima Sertifikat Halal', 'service' => 'Sertifikasi Halal', 'caption' => 'Pendamping dan pelaku usaha menunjukkan sertifikat serta identitas halal yang telah diterima.', 'alt' => 'Serah terima sertifikat halal bersama pelaku usaha'],
+        ['img' => 'testi3.jpeg', 'title' => 'Sertifikat Halal untuk Usaha Kuliner', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi penyerahan sertifikat dan label halal di lokasi usaha kuliner.', 'alt' => 'Penyerahan sertifikat halal di lokasi usaha kuliner'],
+        ['img' => 'testi4.jpeg', 'title' => 'Penyerahan Sertifikat Bersama Tim Usaha', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi bersama tim usaha setelah penyerahan dokumen sertifikat dan label halal.', 'alt' => 'Penyerahan sertifikat dan label halal bersama tim usaha'],
+        ['img' => 'testi5.jpeg', 'title' => 'Penyerahan Sertifikat Halal untuk BLYSS', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi penyerahan sertifikat dan identitas halal di lokasi usaha BLYSS.', 'alt' => 'Penyerahan sertifikat halal di lokasi usaha BLYSS'],
+        ['img' => 'testi6.jpeg', 'title' => 'Penyerahan Sertifikat Halal Mannamadu', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi penyerahan sertifikat dan label halal kepada pelaku usaha Mannamadu.', 'alt' => 'Penyerahan sertifikat halal kepada pelaku usaha Mannamadu'],
+        ['img' => 'testi7.jpeg', 'title' => 'Sertifikasi Halal Ibis Styles Malang', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi penyerahan sertifikat dan label halal bersama tim Ibis Styles Malang.', 'alt' => 'Penyerahan sertifikat halal bersama tim Ibis Styles Malang'],
+        ['img' => 'testi8.jpeg', 'title' => 'Dokumentasi Sertifikasi di Lokasi Produksi', 'service' => 'Sertifikasi Halal', 'caption' => 'Penyerahan dokumen halal bersama pelaku usaha dan pihak terkait di lokasi produksi.', 'alt' => 'Penyerahan dokumen halal di lokasi produksi'],
+        ['img' => 'testi9.jpeg', 'title' => 'Penyerahan Dokumen Halal kepada Pelaku Usaha', 'service' => 'Sertifikasi Halal', 'caption' => 'Pelaku usaha menerima sertifikat dan materi informasi halal di lokasi kegiatan usaha.', 'alt' => 'Pelaku usaha menerima sertifikat dan informasi halal'],
+        ['img' => 'testi10.jpeg', 'title' => 'Penyerahan Sertifikat dan Informasi Halal', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi bersama pelaku usaha saat menerima sertifikat dan materi informasi halal.', 'alt' => 'Penyerahan sertifikat dan informasi halal kepada pelaku usaha'],
+        ['img' => 'testi11.jpeg', 'title' => 'Hotel Santika Premiere Malang Bersertifikat Halal', 'service' => 'Sertifikasi Halal', 'caption' => 'Dokumentasi penyerahan sertifikat halal untuk Hotel Santika Premiere Malang.', 'alt' => 'Hotel Santika Premiere Malang menerima sertifikat halal'],
     ],
 
     'faq' => [

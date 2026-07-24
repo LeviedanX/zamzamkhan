@@ -36,7 +36,7 @@
                 Hubungi <span class="text-gradient">{{ config('company.name', 'PT Zam Zam Khan') }}</span>
             </h2>
             <p class="mt-4 max-w-lg leading-relaxed text-navy-600 dark:text-navy-300">
-                Tim PT Zam Zam Khan siap membantu konsultasi legalitas usaha, sertifikasi halal, dan kebutuhan administrasi bisnis Anda — melalui WhatsApp, email, atau kunjungan langsung ke kantor.
+                Hubungi tim PT Zam Zam Khan melalui WhatsApp, email, atau kunjungan langsung ke kantor.
             </p>
 
             <ul class="mt-8 space-y-4">
@@ -92,7 +92,7 @@
             {{-- Trust mini badges --}}
             @if ($hasWhatsapp)
             <div class="mt-6 flex flex-wrap gap-2.5">
-                @foreach (['Respon cepat via WhatsApp', 'Konsultasi awal lebih mudah', 'Pendampingan lebih terarah'] as $trust)
+                @foreach (['Konsultasi via WhatsApp', 'Informasi layanan', 'Kunjungan ke kantor'] as $trust)
                     <span class="contact-trust">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         {{ $trust }}

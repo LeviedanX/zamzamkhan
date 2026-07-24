@@ -31,7 +31,7 @@ class TestimonialController extends Controller
             throw $e;
         }
 
-return redirect()->route('admin.testimonials.index')->with('ok', 'Testimoni ditambahkan.');
+        return redirect()->route('admin.testimonials.index')->with('ok', 'Testimoni ditambahkan.');
     }
 
     public function edit(Testimonial $testimonial)
@@ -56,7 +56,7 @@ return redirect()->route('admin.testimonials.index')->with('ok', 'Testimoni dita
             PublicMedia::delete($old);
         }
 
-return redirect()->route('admin.testimonials.index')->with('ok', 'Testimoni diperbarui.');
+        return redirect()->route('admin.testimonials.index')->with('ok', 'Testimoni diperbarui.');
     }
 
     public function destroy(Testimonial $testimonial)

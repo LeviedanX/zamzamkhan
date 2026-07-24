@@ -37,7 +37,7 @@ class ContentSeeder extends Seeder
 
         HeroSection::updateOrCreate(['id' => 1], [
             'title' => 'Konsultan Halal dan Legalitas Usaha di Malang',
-            'subtitle' => 'PT Zam Zam Khan membantu pelaku usaha dalam pendampingan sertifikasi halal, legalitas usaha, BPOM, HAKI, NPWP, akta pendirian, serta desain logo dan label kemasan produk.',
+            'subtitle' => 'Layanan sertifikasi halal, legalitas usaha, BPOM, HAKI, NPWP, akta pendirian, serta desain logo dan label kemasan untuk pelaku usaha.',
             'secondary_button_text' => 'Lihat Layanan',
             // secondary_button_url tidak diisi: tombol hero selalu mengarah ke #layanan (hardcoded),
             // tujuan tombol dihapus dari admin karena tidak ada kegunaan lain selain anchor tetap ini.

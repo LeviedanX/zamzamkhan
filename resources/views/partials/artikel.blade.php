@@ -19,7 +19,7 @@
                     Artikel &amp; Insight Bisnis
                 </h2>
                 <p class="mt-4 leading-relaxed text-navy-600 dark:text-navy-300">
-                    Insight praktis seputar sertifikasi halal, legalitas usaha, BPOM, HAKI, perpajakan, branding, serta aktivitas pendampingan PT Zam Zam Khan.
+                    Panduan ringkas seputar halal, legalitas, perpajakan, kekayaan intelektual, dan identitas produk.
                 </p>
             </div>
             <a href="{{ route('artikel.index') }}" class="article-seeall group inline-flex flex-none items-center gap-2 self-start text-sm font-semibold text-emerald-brand sm:self-auto dark:text-tosca-400">

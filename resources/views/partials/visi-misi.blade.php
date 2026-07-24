@@ -1,8 +1,3 @@
-@php($pillars = [
-    ['title' => 'Legal', 'desc' => 'Mendukung usaha agar lebih tertata dan patuh secara administratif.', 'icon' => 'shield'],
-    ['title' => 'Strategis', 'desc' => 'Memberikan arahan yang relevan untuk pengembangan usaha.', 'icon' => 'compass'],
-    ['title' => 'Halal', 'desc' => 'Mengutamakan proses bisnis yang aman, tepat, dan sesuai prinsip syariah.', 'icon' => 'badge'],
-])
 @php($missionCms = config('company.mission'))
 @php($visionCms = config('company.vision'))
 @php($missions = collect(preg_split('/\r\n|\r|\n/', (string) $missionCms, -1, PREG_SPLIT_NO_EMPTY))->map(fn ($item) => trim($item))->filter()->values())
@@ -24,7 +19,7 @@
                 Arah dan Komitmen PT Zam Zam Khan
             </h2>
             <p class="mt-4 leading-relaxed text-navy-600 dark:text-navy-300">
-                Kami hadir untuk membantu pelaku usaha berkembang secara legal, strategis, dan lebih siap bersaing melalui pendampingan bisnis yang terarah.
+                Landasan PT Zam Zam Khan dalam melayani kebutuhan usaha, legalitas, dan sertifikasi.
             </p>
         </div>
 
@@ -54,7 +49,6 @@
                             <span class="vm-framework-badge">ZZK</span>
                             <p class="vm-framework-center-title">PT Zam Zam Khan</p>
                             <p class="vm-framework-center-sub">Bisnis &amp; Legal Konsultan</p>
-                            <span class="vm-framework-caption">Pendampingan Usaha Terarah</span>
                         </div>
                     </div>
 
@@ -137,27 +131,6 @@
                 </ul>
             </article>
             @endif
-        </div>
-
-        {{-- 3 Pilar komitmen --}}
-        <div class="vm-pillars reveal mt-6 grid gap-4 sm:grid-cols-3">
-            @foreach ($pillars as $p)
-                <div class="vm-pillar-card flex items-start gap-3.5 rounded-2xl border border-navy-100 bg-navy-50/60 p-5 transition duration-300 hover:-translate-y-1 hover:border-emerald-brand/40 hover:shadow-lg hover:shadow-navy-900/10 dark:border-white/10 dark:bg-white/5 dark:hover:border-tosca-400/40">
-                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-emerald-brand/10 text-emerald-brand dark:bg-emerald-brand/20 dark:text-tosca-400">
-                        @if ($p['icon'] === 'shield')
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M12 3l7 3v5c0 4.2-2.8 7.9-7 9-4.2-1.1-7-4.8-7-9V6l7-3z"/></svg>
-                        @elseif ($p['icon'] === 'compass')
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M14.8 9.2l-1.7 4-4 1.7 1.7-4 4-1.7z"/></svg>
-                        @else
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M12 2.5l2.3 1.7 2.85-.2.9 2.7 2.3 1.7-.9 2.7.9 2.7-2.3 1.7-.9 2.7-2.85-.2L12 21.5l-2.3-1.7-2.85.2-.9-2.7L3.65 15.6l.9-2.7-.9-2.7 2.3-1.7.9-2.7 2.85.2L12 2.5z"/></svg>
-                        @endif
-                    </span>
-                    <div>
-                        <p class="font-display text-base font-bold text-navy-900 dark:text-white">{{ $p['title'] }}</p>
-                        <p class="mt-1 text-sm leading-relaxed text-navy-600 dark:text-navy-300">{{ $p['desc'] }}</p>
-                    </div>
-                </div>
-            @endforeach
         </div>
     </div>
 </section>

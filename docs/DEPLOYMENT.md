@@ -20,7 +20,7 @@ php artisan storage:link
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan security:scan
+php artisan security:scan --production
 php artisan deploy:check --production
 ```
 
@@ -66,7 +66,7 @@ Scheduler menjalankan pemindaian integritas harian. Pantau
 7. Jalankan ulang:
 
 ```bash
-php artisan security:scan
+php artisan security:scan --production
 php artisan deploy:check --production
 ```
 

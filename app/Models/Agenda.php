@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Agenda extends Model
 {
@@ -30,7 +31,7 @@ class Agenda extends Model
     }
 
     /** Waktu selesai efektif untuk dipakai di PHP. */
-    public function finishesAt(): ?\Illuminate\Support\Carbon
+    public function finishesAt(): ?Carbon
     {
         return $this->ends_at ?? $this->starts_at;
     }

@@ -31,7 +31,7 @@ class ClientController extends Controller
             throw $e;
         }
 
-return redirect()->route('admin.clients.index')->with('ok', 'Klien ditambahkan.');
+        return redirect()->route('admin.clients.index')->with('ok', 'Klien ditambahkan.');
     }
 
     public function edit(Client $client)
@@ -56,7 +56,7 @@ return redirect()->route('admin.clients.index')->with('ok', 'Klien ditambahkan.'
             PublicMedia::delete($old);
         }
 
-return redirect()->route('admin.clients.index')->with('ok', 'Klien diperbarui.');
+        return redirect()->route('admin.clients.index')->with('ok', 'Klien diperbarui.');
     }
 
     public function destroy(Client $client)

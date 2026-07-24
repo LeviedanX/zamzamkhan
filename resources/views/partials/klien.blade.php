@@ -20,7 +20,7 @@
                 Dipercaya oleh Berbagai Brand, UMKM, Kuliner, dan Hospitality
             </h2>
             <p class="mt-4 leading-relaxed text-navy-600 dark:text-navy-300">
-                Sebagian klien yang telah mendapatkan pendampingan legalitas, sertifikasi halal, dan penguatan administrasi usaha bersama PT Zam Zam Khan.
+                Sebagian pelaku usaha dan badan usaha yang pernah menggunakan layanan PT Zam Zam Khan.
             </p>
         </div>
 
