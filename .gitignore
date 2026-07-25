@@ -12,6 +12,7 @@
 /.playwright-cli
 /.release
 /.dist
+/DEPLOY
 /output
 /references
 /.cursor/

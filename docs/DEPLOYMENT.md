@@ -48,7 +48,7 @@ Scheduler menjalankan pemindaian integritas harian. Pantau
 ## Web server
 
 - Apache memakai aturan `public/.htaccess`.
-- Nginx dapat memakai `deploy/nginx.conf.example`; ganti domain, path, dan socket
+- Nginx dapat memakai `docs/nginx.conf.example`; ganti domain, path, dan socket
   PHP-FPM, lalu wajib jalankan `nginx -t`.
 - Folder `/storage/` hanya boleh menyajikan JPG, PNG, dan WEBP. Semua file aktif,
   HTML, SVG, dotfile, dan ekstensi lain harus ditolak.

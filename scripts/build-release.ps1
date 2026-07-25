@@ -1,5 +1,5 @@
 param(
-    [string]$OutputDirectory = ".dist"
+    [string]$OutputDirectory = "DEPLOY"
 )
 
 $ErrorActionPreference = "Stop"
@@ -69,6 +69,7 @@ foreach ($file in $files) {
 
 New-Item -ItemType Directory -Path (Join-Path $stage "docs") -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $root "docs/DEPLOYMENT.md") -Destination (Join-Path $stage "docs/DEPLOYMENT.md") -Force
+Copy-Item -LiteralPath (Join-Path $root "docs/nginx.conf.example") -Destination (Join-Path $stage "docs/nginx.conf.example") -Force
 
 if (-not (Test-Path (Join-Path $stage "public/build/manifest.json"))) {
     throw "Vite manifest tidak ditemukan. Jalankan npm run build terlebih dahulu."
