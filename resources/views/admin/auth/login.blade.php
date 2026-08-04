@@ -10,21 +10,12 @@
     @vite(['resources/css/app.css', 'resources/js/login.js'])
 </head>
 <body class="login-page font-sans antialiased">
-    <div class="login-grid" aria-hidden="true"></div>
-    <div class="login-glow login-glow--1" aria-hidden="true"></div>
-    <div class="login-glow login-glow--2" aria-hidden="true"></div>
-
     <main class="login-layout">
         <section class="login-panel">
             <div class="login-shell">
                 <div class="login-card">
                     <div class="login-heading">
-                        <span class="login-eyebrow">
-                            <span class="login-eyebrow-dot"></span>
-                            Area administrator
-                        </span>
-                        <h2>Selamat datang kembali</h2>
-                        <p>Masukkan kredensial administrator untuk melanjutkan ke dashboard.</p>
+                        <h1>LOGIN ADMIN</h1>
                     </div>
 
                     @if ($errors->any())
@@ -80,20 +71,8 @@
 
                         <button type="submit" class="btn-primary login-submit">
                             <span>Masuk ke Dashboard</span>
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
-                            </svg>
                         </button>
                     </form>
-
-                    <div class="login-divider"><span>Akses terbatas</span></div>
-                    <p class="login-security-note">
-                        <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 5 6v5c0 4.6 2.9 8.1 7 10 4.1-1.9 7-5.4 7-10V6l-7-3Z"/>
-                            <path stroke-linecap="round" d="m9 12 2 2 4-4"/>
-                        </svg>
-                        Gunakan hanya akun yang telah diotorisasi.
-                    </p>
                 </div>
 
                 <a href="{{ route('home') }}" class="login-back">

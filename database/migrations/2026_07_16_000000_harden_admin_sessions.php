@@ -9,9 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('admins', function (Blueprint $table) {
-            $table->unsignedBigInteger('auth_version')->default(1)->after('is_active');
-        });
+        if (! Schema::hasColumn('users', 'auth_version')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unsignedBigInteger('auth_version')->default(1)->after('is_active');
+            });
+        }
 
         // Sesi lama belum membawa auth_version dan user_id admin yang benar.
         // Paksa login ulang satu kali agar seluruh sesi setelah migration memakai kontrak baru.
@@ -20,8 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('admins', function (Blueprint $table) {
-            $table->dropColumn('auth_version');
-        });
+        DB::table('sessions')->delete();
     }
 };

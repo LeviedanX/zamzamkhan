@@ -122,7 +122,12 @@ tests/                  Feature test dan unit test
 
 ### Deployment
 
-Sebelum deployment, siapkan environment production yang terpisah dari konfigurasi development. Production minimal harus menggunakan:
+Panduan lengkap fresh install, update, preflight hosting, backup, cron, web
+server, dan verifikasi pascadeploy tersedia di
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Jangan menyalin `.env` development
+atau membuat ulang `APP_KEY` pada website yang sudah berjalan.
+
+Urutan inti fresh install:
 
 ```dotenv
 APP_ENV=production
@@ -132,14 +137,23 @@ APP_KEY=<generate-secure-key>
 
 ```bash
 composer install --no-dev --optimize-autoloader
+php artisan optimize:clear
+php artisan key:generate --force
 php artisan migrate --force
+php artisan admin:rotate-credentials
 php artisan storage:link
-npm ci
-npm run build
-php artisan optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan security:scan --production
+php artisan deploy:check --production
 ```
 
-Pastikan backup database, permission `storage` dan `bootstrap/cache`, HTTPS, mail, database production, serta credential admin sudah benar sebelum go-live.
+Paket `DEPLOY/zzk-web-production.zip` sudah memuat dependency PHP production dan
+hasil build frontend, sehingga Node.js tidak diperlukan pada hosting. Go-live
+tetap mensyaratkan PHP 8.3+, extension wajib, MySQL non-root, document root
+`public/`, HTTPS, storage writable, storage link, cron scheduler, backup, dan
+smoke test melalui domain asli.
 
 ### Lisensi
 
@@ -252,7 +266,12 @@ Use the same MySQL credentials in `.env`. The guard in `tests/TestCase.php` abor
 
 ### Deployment
 
-Before deployment, prepare a production environment that is separate from the development configuration. Production should at minimum use:
+The complete fresh-install, update, hosting-preflight, backup, cron, web-server,
+and post-deployment procedure is documented in
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Never copy the development `.env` or
+regenerate `APP_KEY` for an existing production site.
+
+Core fresh-install sequence:
 
 ```dotenv
 APP_ENV=production
@@ -262,14 +281,23 @@ APP_KEY=<generate-secure-key>
 
 ```bash
 composer install --no-dev --optimize-autoloader
+php artisan optimize:clear
+php artisan key:generate --force
 php artisan migrate --force
+php artisan admin:rotate-credentials
 php artisan storage:link
-npm ci
-npm run build
-php artisan optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan security:scan --production
+php artisan deploy:check --production
 ```
 
-Before going live, verify database backups, `storage` and `bootstrap/cache` permissions, HTTPS, mail, production database settings, and admin credentials.
+`DEPLOY/zzk-web-production.zip` already contains production PHP dependencies and
+the frontend build, so Node.js is not required on the host. Go-live still
+requires PHP 8.3+, required extensions, non-root MySQL, a `public/` document
+root, HTTPS, writable storage, the storage link, scheduler cron, backups, and
+smoke tests through the real domain.
 
 ### License
 

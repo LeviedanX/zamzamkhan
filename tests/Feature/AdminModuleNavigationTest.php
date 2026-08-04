@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +12,8 @@ class AdminModuleNavigationTest extends TestCase
 
     public function test_tombol_kiri_mengarah_ke_modul_sebelumnya(): void
     {
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Navigasi',
             'email' => 'navigasi@uji.test',
             'password' => 'password',
@@ -42,7 +43,8 @@ class AdminModuleNavigationTest extends TestCase
 
     public function test_sidebar_tampil_dari_kiri_dan_memuat_semua_modul_aktif(): void
     {
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Sidebar',
             'email' => 'sidebar@uji.test',
             'password' => 'password',
@@ -99,7 +101,8 @@ class AdminModuleNavigationTest extends TestCase
 
     public function test_respons_navigasi_parsial_tidak_mengirim_ulang_style_kritis(): void
     {
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Partial',
             'email' => 'partial@uji.test',
             'password' => 'password',

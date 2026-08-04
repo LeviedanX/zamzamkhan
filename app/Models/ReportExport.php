@@ -13,6 +13,6 @@ class ReportExport extends Model
 
     public function admin(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'generated_by');
+        return $this->belongsTo(User::class, 'generated_by');
     }
 }

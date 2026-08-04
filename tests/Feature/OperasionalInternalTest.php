@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\BusinessApplication;
 use App\Models\BusinessCategory;
 use App\Models\ReportExport;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -20,9 +20,10 @@ class OperasionalInternalTest extends TestCase
         Storage::fake('local');
     }
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Internal',
             'email' => 'internal@uji.test',
             'password' => 'password',

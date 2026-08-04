@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
@@ -89,7 +89,8 @@ class SecurityHeadersTest extends TestCase
 
     public function test_admin_response_tidak_boleh_dicache(): void
     {
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Header',
             'email' => 'header@uji.test',
             'password' => 'password',

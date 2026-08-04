@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\Agenda;
+use App\Models\User;
 use App\Support\AgendaPurger;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,9 +14,10 @@ class AgendaScheduleTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Agenda',
             'email' => 'agenda@uji.test',
             'password' => 'password',

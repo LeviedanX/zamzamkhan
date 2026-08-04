@@ -30,12 +30,12 @@ class BusinessApplication extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function updater(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'updated_by');
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function scopeFiltered(Builder $query, array $filters): Builder

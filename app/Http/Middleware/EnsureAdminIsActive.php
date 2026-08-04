@@ -27,6 +27,7 @@ class EnsureAdminIsActive
         $absoluteLimit = max($idleLimit, (int) config('admin.session_absolute_seconds', 28800));
 
         $reason = match (true) {
+            ! $admin->is_admin => 'not-admin',
             ! $admin->is_active => 'inactive',
             is_numeric($sessionVersion) && (int) $sessionVersion !== (int) $admin->auth_version => 'revoked',
             is_numeric($startedAt) && $now - (int) $startedAt > $absoluteLimit => 'absolute-timeout',

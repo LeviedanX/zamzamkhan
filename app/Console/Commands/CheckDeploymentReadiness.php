@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Admin;
 use App\Models\HeroSection;
 use App\Models\SiteSetting;
+use App\Models\User;
 use App\Support\AdminSecurity;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -24,6 +24,22 @@ class CheckDeploymentReadiness extends Command
 
     public function handle(): int
     {
+        $requiredExtensions = ['pdo_mysql', 'dom', 'fileinfo', 'openssl', 'xmlreader', 'zip'];
+        $missingExtensions = array_values(array_filter(
+            $requiredExtensions,
+            fn (string $extension): bool => ! extension_loaded($extension),
+        ));
+
+        $this->check(
+            'PHP minimal 8.3',
+            PHP_VERSION_ID >= 80300,
+            'Gunakan PHP 8.3 atau lebih baru pada web server, CLI, dan cron.',
+        );
+        $this->check(
+            'Ekstensi PHP hosting lengkap',
+            $missingExtensions === [],
+            $missingExtensions === [] ? '' : 'Belum tersedia: '.implode(', ', $missingExtensions).'.',
+        );
         $this->check('APP_KEY tersedia', filled(config('app.key')));
         $this->check('Vite manifest tersedia', file_exists(public_path('build/manifest.json')));
         $this->check('public/hot tidak ada', ! file_exists(public_path('hot')), 'Hapus marker Vite development sebelum release.');
@@ -33,7 +49,7 @@ class CheckDeploymentReadiness extends Command
         $databaseReady = $this->databaseIsReachable();
         $this->check('Database dapat diakses', $databaseReady);
         $this->check('Tidak ada migration tertunda', $databaseReady && $this->pendingMigrations() === []);
-        $this->check('Admin aktif tersedia', $databaseReady && Admin::where('is_active', true)->exists());
+        $this->check('Admin aktif tersedia', $databaseReady && User::where('is_admin', true)->where('is_active', true)->exists());
         $this->check('SiteSetting singleton', $databaseReady && SiteSetting::count() === 1);
         $this->check('Hero singleton', $databaseReady && HeroSection::count() === 1);
         $this->check('Nomor WhatsApp tersedia', filled(config('company.whatsapp_number')));
@@ -49,11 +65,24 @@ class CheckDeploymentReadiness extends Command
 
         if ($this->option('production')) {
             $url = (string) config('app.url');
+            $appHost = strtolower((string) parse_url($url, PHP_URL_HOST));
+            $sessionDomain = strtolower(ltrim((string) config('session.domain'), '.'));
+            $sessionDomainMatches = $sessionDomain === ''
+                || $sessionDomain === $appHost
+                || str_ends_with($appHost, '.'.$sessionDomain);
             $dbUser = strtolower((string) config('database.connections.'.config('database.default').'.username'));
+            $defaultLogChannel = (string) config('logging.default');
+            $logLevel = strtolower((string) config("logging.channels.{$defaultLogChannel}.level"));
 
             $this->check('APP_ENV=production', app()->environment('production'));
             $this->check('APP_DEBUG=false', ! config('app.debug'));
             $this->check('APP_URL memakai HTTPS', str_starts_with($url, 'https://') && ! str_contains($url, 'example.com'));
+            $this->check(
+                'Domain cookie sesuai APP_URL',
+                $sessionDomainMatches,
+                'SESSION_DOMAIN harus kosong, sama dengan host APP_URL, atau parent domain-nya.',
+            );
+            $this->check('Database memakai MySQL', config('database.default') === 'mysql');
             $this->check('Session terenkripsi', (bool) config('session.encrypt'));
             $this->check('Cookie session secure', (bool) config('session.secure'));
             $this->check('Session persistent server-side', in_array(config('session.driver'), ['database', 'redis'], true));
@@ -61,6 +90,7 @@ class CheckDeploymentReadiness extends Command
             $this->check('Filter anti judol aktif', (bool) config('admin.block_gambling_content'));
             $this->check('HSTS aktif', (bool) config('security.hsts_enabled'));
             $this->check('User database bukan root', $dbUser !== '' && ! in_array($dbUser, ['root', 'sa', 'postgres'], true));
+            $this->check('Log production bukan debug', $logLevel !== '' && $logLevel !== 'debug');
             $this->check('Password bootstrap admin kuat atau sudah dihapus', $this->seedPasswordIsSafe());
         }
 
@@ -76,7 +106,13 @@ class CheckDeploymentReadiness extends Command
             return self::FAILURE;
         }
 
-        $this->info('Deployment check lulus.');
+        $this->info('Deployment check aplikasi lulus.');
+        if ($this->option('production')) {
+            $this->warn(
+                'Gate eksternal tetap wajib diverifikasi: document root public/, sertifikat TLS, cron scheduler, '
+                .'konfigurasi web server, backup database/upload, dan smoke test melalui domain asli.'
+            );
+        }
 
         return self::SUCCESS;
     }

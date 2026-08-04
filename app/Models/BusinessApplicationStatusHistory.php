@@ -16,6 +16,6 @@ class BusinessApplicationStatusHistory extends Model
 
     public function admin(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'changed_by');
+        return $this->belongsTo(User::class, 'changed_by');
     }
 }

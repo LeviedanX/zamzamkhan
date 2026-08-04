@@ -21,8 +21,11 @@
             <div class="admin-form-grid admin-form-grid--2">
                 <label class="admin-field">
                     <span>Email admin baru</span>
-                    <input type="email" name="email" value="{{ old('email', $admin->email) }}" required autocomplete="off" inputmode="email" placeholder="nama@gmail.com">
+                    <input type="email" name="email" value="{{ old('email', $admin->email) }}" required autocomplete="off" inputmode="email" placeholder="nama@gmail.com" @error('email') aria-invalid="true" @enderror>
                     <small>Wajib berupa alamat Gmail dengan akhiran @gmail.com.</small>
+                    @error('email')
+                        <small class="admin-field__error" role="alert">{{ $message }}</small>
+                    @enderror
                 </label>
                 <div class="account-current-card" aria-label="Informasi akun saat ini">
                     <span>Akun aktif saat ini</span>
@@ -31,8 +34,11 @@
                 </div>
                 <label class="admin-field">
                     <span>Password baru</span>
-                    <input type="password" name="password" autocomplete="new-password" minlength="10" placeholder="Minimal 10 karakter">
-                    <small>Minimal 10 karakter, huruf besar-kecil, dan angka.</small>
+                    <input type="password" name="password" autocomplete="new-password" minlength="10" placeholder="Minimal 10 karakter" @error('password') aria-invalid="true" @enderror>
+                    <small>Minimal 10 karakter.</small>
+                    @error('password')
+                        <small class="admin-field__error" role="alert">{{ $message }}</small>
+                    @enderror
                 </label>
                 <label class="admin-field">
                     <span>Konfirmasi password baru</span>
@@ -49,13 +55,19 @@
             <div class="admin-form-grid admin-form-grid--2">
                 <label class="admin-field">
                     <span>Email akun lama</span>
-                    <input type="email" name="current_email" value="{{ old('current_email') }}" required autocomplete="off" placeholder="Email login saat ini">
+                    <input type="email" name="current_email" value="{{ old('current_email') }}" required autocomplete="off" placeholder="Email login saat ini" @error('current_email') aria-invalid="true" @enderror>
                 </label>
                 <label class="admin-field">
                     <span>Password akun lama</span>
-                    <input type="password" name="current_password" required autocomplete="current-password" placeholder="Password login saat ini">
+                    <input type="password" name="current_password" required autocomplete="current-password" placeholder="Password login saat ini" @if ($errors->has('current_password') || $errors->has('current_credentials')) aria-invalid="true" @endif>
+                    <small>Masukkan password yang masih digunakan untuk login, bukan password baru.</small>
                 </label>
             </div>
+            @error('current_credentials')
+                <div class="admin-alert admin-alert--danger account-verification__error" role="alert">
+                    <span>{{ $message }}</span>
+                </div>
+            @enderror
         </section>
 
         <div class="admin-form-actions">

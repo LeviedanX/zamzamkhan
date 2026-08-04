@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Admin;
+use App\Models\User;
 use App\Support\AdminSecurity;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +17,12 @@ class RotateAdminCredentials extends Command
 
     public function handle(): int
     {
-        $existing = Admin::query()->when($this->option('email'), fn ($query, $email) => $query->where('email', Str::lower(trim($email))))->first();
-        if (! $existing && Admin::count() === 1) {
-            $existing = Admin::first();
+        $adminUsers = User::query()->where('is_admin', true);
+        $existing = (clone $adminUsers)
+            ->when($this->option('email'), fn ($query, $email) => $query->where('email', Str::lower(trim($email))))
+            ->first();
+        if (! $existing && (clone $adminUsers)->count() === 1) {
+            $existing = (clone $adminUsers)->first();
         }
 
         $email = Str::lower(trim((string) ($this->option('email') ?: $this->ask('Email admin', $existing?->email))));
@@ -28,7 +31,7 @@ class RotateAdminCredentials extends Command
         $confirmation = (string) $this->secret('Ulangi password baru');
 
         $validator = Validator::make(compact('email', 'name', 'password', 'confirmation'), [
-            'email' => ['required', 'email:rfc', 'max:160', 'ends_with:@gmail.com', 'unique:admins,email,'.($existing?->id ?? 'NULL')],
+            'email' => ['required', 'email:rfc', 'max:160', 'ends_with:@gmail.com', 'unique:users,email,'.($existing?->id ?? 'NULL')],
             'name' => ['required', 'string', 'max:120'],
             'password' => ['required', AdminSecurity::passwordRule(), 'same:confirmation'],
         ]);
@@ -42,13 +45,21 @@ class RotateAdminCredentials extends Command
         }
 
         DB::transaction(function () use ($existing, $email, $name, $password): void {
-            $admin = $existing ?? new Admin;
+            $admin = $existing ?? new User;
+            if (! $existing) {
+                if (User::query()->whereKey(1)->exists()) {
+                    throw new \LogicException('ID 1 sudah digunakan akun lain. Admin pertama tidak dapat dibuat dengan ID 1.');
+                }
+
+                $admin->id = 1;
+            }
             $admin->fill([
                 'email' => $email,
                 'name' => $name,
                 'password' => $password,
+                'is_admin' => true,
                 'is_active' => true,
-                'auth_version' => max(1, (int) $admin->auth_version) + 1,
+                'auth_version' => $existing ? max(1, (int) $admin->auth_version) + 1 : 1,
             ]);
             $admin->setRememberToken(Str::random(60));
             $admin->save();

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\Article;
 use App\Models\ArticleCategory;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -52,9 +52,10 @@ class ArticleTest extends TestCase
         $this->assertCount(0, $articleQueries);
     }
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Uji',
             'email' => 'admin@uji.test',
             'password' => 'password',

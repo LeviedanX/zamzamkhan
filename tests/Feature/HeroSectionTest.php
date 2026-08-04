@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\HeroSection;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,9 +11,10 @@ class HeroSectionTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Hero',
             'email' => 'hero@uji.test',
             'password' => 'password',

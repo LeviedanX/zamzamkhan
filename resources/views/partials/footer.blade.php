@@ -116,8 +116,17 @@
     </div>
 
     <div class="relative border-t border-white/10">
-        <div class="container-x flex items-center justify-center py-6 text-center text-xs text-navy-400">
-            <p>&copy; {{ date('Y') }} {{ config('company.name', 'PT Zam Zam Khan') }}. Seluruh hak cipta dilindungi.</p>
+        <div class="container-x flex min-h-20 items-center justify-center py-6 text-center text-xs text-navy-400">
+            <div class="footer-copyright">
+                @if (request()->routeIs('home'))
+                    <form method="POST" action="{{ route('admin.access') }}" class="footer-admin-access hidden xl:block">
+                        @csrf
+                        <button type="submit" aria-label="Login Admin" class="footer-admin-login">A</button>
+                    </form>
+                @endif
+
+                <p>&copy; {{ date('Y') }} {{ config('company.name', 'PT Zam Zam Khan') }}. Seluruh hak cipta dilindungi.</p>
+            </div>
         </div>
     </div>
 </footer>

@@ -70,7 +70,7 @@ class AuthController extends Controller
                 ->setStatusCode(429);
         }
 
-        if (Auth::guard('admin')->attempt([...$credentials, 'is_active' => true])) {
+        if (Auth::guard('admin')->attempt([...$credentials, 'is_admin' => true, 'is_active' => true])) {
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
             $request->session()->forget([

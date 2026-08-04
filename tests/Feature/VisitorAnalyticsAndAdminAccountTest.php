@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
+use App\Models\User;
 use App\Models\WebVisit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -12,9 +12,10 @@ class VisitorAnalyticsAndAdminAccountTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Uji',
             'email' => 'adminlama@gmail.com',
             'password' => 'PasswordLama123',
@@ -95,13 +96,51 @@ class VisitorAnalyticsAndAdminAccountTest extends TestCase
             'current_email' => 'adminlama@gmail.com',
             'current_password' => 'PasswordLama123',
             'email' => 'adminbaru@gmail.com',
-            'password' => 'Password-Baru-456!',
-            'password_confirmation' => 'Password-Baru-456!',
-        ])->assertRedirect(route('admin.account.edit'));
+            'password' => 'katasandibaru',
+            'password_confirmation' => 'katasandibaru',
+        ])->assertRedirect(route('admin.account.edit', ['v' => 2]));
 
         $admin->refresh();
         $this->assertSame('adminbaru@gmail.com', $admin->email);
-        $this->assertTrue(Hash::check('Password-Baru-456!', $admin->password));
+        $this->assertTrue(Hash::check('katasandibaru', $admin->password));
+        $this->assertDatabaseHas('users', [
+            'id' => $admin->id,
+            'email' => 'adminbaru@gmail.com',
+            'is_admin' => true,
+        ]);
         $this->assertAuthenticatedAs($admin, 'admin');
+
+        $this->post(route('admin.logout'))->assertRedirect(route('home'));
+        $this->post(route('admin.access'))->assertRedirect(route('admin.login'));
+        $this->post(route('admin.login.attempt'), [
+            'email' => 'adminbaru@gmail.com',
+            'password' => 'katasandibaru',
+        ])->assertRedirect(route('admin.dashboard'));
+        $this->assertAuthenticatedAs($admin->fresh(), 'admin');
+    }
+
+    public function test_form_akun_menjelaskan_kebijakan_password_backend_secara_akurat(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->get(route('admin.account.edit'))
+            ->assertOk()
+            ->assertSee('minlength="10"', false)
+            ->assertSee('Minimal 10 karakter.')
+            ->assertSee('Masukkan password yang masih digunakan untuk login, bukan password baru.');
+    }
+
+    public function test_password_baru_kurang_dari_sepuluh_karakter_ditolak(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin, 'admin')->put(route('admin.account.update'), [
+            'current_email' => $admin->email,
+            'current_password' => 'PasswordLama123',
+            'email' => 'adminbaru@gmail.com',
+            'password' => 'sembilan9',
+            'password_confirmation' => 'sembilan9',
+        ])->assertSessionHasErrors('password');
+
+        $this->assertSame('adminlama@gmail.com', $admin->fresh()->email);
     }
 }

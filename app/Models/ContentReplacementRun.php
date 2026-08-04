@@ -23,11 +23,11 @@ class ContentReplacementRun extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function reverter(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'reverted_by');
+        return $this->belongsTo(User::class, 'reverted_by');
     }
 }

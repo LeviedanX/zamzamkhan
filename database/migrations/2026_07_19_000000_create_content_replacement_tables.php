@@ -18,9 +18,9 @@ return new class extends Migration
             $table->unsignedInteger('affected_fields')->default(0);
             $table->unsignedInteger('occurrence_count')->default(0);
             $table->string('status', 30)->default('completed');
-            $table->foreignId('created_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('executed_at');
-            $table->foreignId('reverted_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->foreignId('reverted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('reverted_at')->nullable();
             $table->timestamps();
 

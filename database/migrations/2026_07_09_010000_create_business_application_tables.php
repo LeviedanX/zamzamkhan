@@ -31,8 +31,8 @@ return new class extends Migration
             $table->foreignId('updated_by')->nullable();
             $table->timestamps();
             $table->foreign('business_category_id', 'ba_category_fk')->references('id')->on('business_categories')->nullOnDelete();
-            $table->foreign('created_by', 'ba_created_by_fk')->references('id')->on('admins')->nullOnDelete();
-            $table->foreign('updated_by', 'ba_updated_by_fk')->references('id')->on('admins')->nullOnDelete();
+            $table->foreign('created_by', 'ba_created_by_fk')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('updated_by', 'ba_updated_by_fk')->references('id')->on('users')->nullOnDelete();
             $table->index(['process_status', 'submitted_at']);
             $table->index(['applicant_type', 'business_category_id']);
             $table->index('registration_number');
@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignId('changed_by')->nullable();
             $table->timestamps();
             $table->foreign('business_application_id', 'ba_history_app_fk')->references('id')->on('business_applications')->cascadeOnDelete();
-            $table->foreign('changed_by', 'ba_history_admin_fk')->references('id')->on('admins')->nullOnDelete();
+            $table->foreign('changed_by', 'ba_history_admin_fk')->references('id')->on('users')->nullOnDelete();
         });
         Schema::create('report_exports', function (Blueprint $table) {
             $table->id();
@@ -59,7 +59,7 @@ return new class extends Migration
             $table->foreignId('generated_by')->nullable();
             $table->timestamp('generated_at')->nullable();
             $table->timestamps();
-            $table->foreign('generated_by', 'report_generated_by_fk')->references('id')->on('admins')->nullOnDelete();
+            $table->foreign('generated_by', 'report_generated_by_fk')->references('id')->on('users')->nullOnDelete();
             $table->index(['format', 'generated_at']);
         });
     }

@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequireAdminLoginEntry;
-use App\Models\Admin;
 use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\HeroSection;
 use App\Models\SiteSetting;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
@@ -16,9 +16,10 @@ class SiteSettingTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function admin(bool $active = true): Admin
+    private function admin(bool $active = true): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Uji',
             'email' => 'admin@uji.test',
             'password' => 'password',
@@ -52,7 +53,7 @@ class SiteSettingTest extends TestCase
             'password' => 'password',
         ])->assertRedirect(route('admin.dashboard'));
 
-        $this->assertAuthenticatedAs(Admin::first(), 'admin');
+        $this->assertAuthenticatedAs(User::first(), 'admin');
     }
 
     public function test_login_admin_tidak_menyediakan_persistent_session(): void
@@ -86,6 +87,25 @@ class SiteSettingTest extends TestCase
                 'password' => 'password',
             ])
             ->assertRedirect(route('admin.login'));
+
+        $this->assertGuest('admin');
+    }
+
+    public function test_user_biasa_tidak_dapat_login_ke_panel_admin(): void
+    {
+        User::create([
+            'name' => 'Pengguna Biasa',
+            'email' => 'pengguna@uji.test',
+            'password' => 'password',
+            'is_admin' => false,
+            'is_active' => true,
+        ]);
+        $this->openAdminLogin();
+
+        $this->post(route('admin.login.attempt'), [
+            'email' => 'pengguna@uji.test',
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
 
         $this->assertGuest('admin');
     }

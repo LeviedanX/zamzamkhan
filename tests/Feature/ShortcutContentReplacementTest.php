@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\Article;
 use App\Models\ContentReplacementRun;
 use App\Models\Service;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -14,13 +14,14 @@ class ShortcutContentReplacementTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Admin $admin;
+    private User $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->admin = Admin::create([
+        $this->admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Shortcut',
             'email' => 'shortcut@uji.test',
             'password' => 'password',

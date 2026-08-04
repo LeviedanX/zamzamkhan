@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\ReportExport;
 use App\Models\SiteSetting;
+use App\Models\User;
 use App\Models\WebVisit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -16,9 +16,10 @@ class AdminSecurityAndOperationsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Operasional',
             'email' => 'operasional@gmail.com',
             'password' => 'PasswordLama123',
@@ -120,9 +121,9 @@ class AdminSecurityAndOperationsTest extends TestCase
             'current_email' => $admin->email,
             'current_password' => 'PasswordLama123',
             'email' => $admin->email,
-            'password' => 'Password-Baru-456!',
-            'password_confirmation' => 'Password-Baru-456!',
-        ])->assertRedirect(route('admin.account.edit'));
+            'password' => 'katasandibaru',
+            'password_confirmation' => 'katasandibaru',
+        ])->assertRedirect(route('admin.account.edit', ['v' => 2]));
 
         $this->assertDatabaseMissing('sessions', ['id' => 'sesi-perangkat-lama']);
         $this->assertAuthenticatedAs($admin->fresh(), 'admin');
@@ -188,11 +189,15 @@ class AdminSecurityAndOperationsTest extends TestCase
             '--email' => 'rotasi@gmail.com',
             '--name' => 'Admin Rotasi',
         ])
-            ->expectsQuestion('Password baru', 'Password-Baru-456!')
-            ->expectsQuestion('Ulangi password baru', 'Password-Baru-456!')
+            ->expectsQuestion('Password baru', 'katasandibaru')
+            ->expectsQuestion('Ulangi password baru', 'katasandibaru')
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('admins', ['id' => $admin->id, 'email' => 'rotasi@gmail.com']);
+        $this->assertDatabaseHas('users', [
+            'id' => $admin->id,
+            'email' => 'rotasi@gmail.com',
+            'is_admin' => true,
+        ]);
         $this->assertDatabaseMissing('sessions', ['id' => 'sesi-sebelum-rotasi-console']);
     }
 }

@@ -1063,6 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Prerender via Speculation Rules saat hover + fallback prefetch link.
 // ---------------------------------------------------------------------------
 (function () {
+    const isAdminPage = document.body.classList.contains('admin-shell');
     const internalGet = (a) =>
         a &&
         a.href &&
@@ -1074,7 +1075,9 @@ document.addEventListener('DOMContentLoaded', () => {
         !a.getAttribute('href').startsWith('#');
 
     // 1) Speculation Rules — prerender halaman internal saat hover (Chromium).
-    if (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules')) {
+    // Halaman admin memuat data autentikasi yang dapat berubah setelah mutasi.
+    // Prerender browser dapat mengaktifkan kembali HTML lama sesudah redirect.
+    if (!isAdminPage && HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules')) {
         const rules = {
             prerender: [{
                 source: 'document',
@@ -1092,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
         s.nonce = document.querySelector('meta[name="csp-nonce"]')?.content || '';
         s.textContent = JSON.stringify(rules);
         document.head.appendChild(s);
-    } else {
+    } else if (!isAdminPage) {
         // 2) Fallback: prefetch HTML saat kursor menyentuh link internal.
         const seen = new Set();
         const onHover = (e) => {
@@ -1111,6 +1114,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3) Feedback instan: tombol submit langsung "sibuk" (cegah double-submit).
     document.addEventListener('submit', (e) => {
         if (e.target.closest && e.target.closest('.wa-lead-panel')) return;
+        // Form client-only tidak pernah meninggalkan halaman: validasinya
+        // ditangani Alpine, sehingga mengunci tombol di fase capture membuat
+        // pengguna terjebak setelah satu validasi gagal.
+        if (e.target.matches('[data-client-form]')) return;
         const btn = e.target.querySelector('button[type="submit"], button:not([type])');
         if (btn && !btn.disabled) {
             btn.classList.add('opacity-70', 'cursor-wait', 'pointer-events-none');
@@ -1181,7 +1188,9 @@ document.addEventListener('DOMContentLoaded', () => {
         && !a.getAttribute('href').startsWith('#');
 
     const fetchPage = (url) => {
-        const cached = pageCache.get(url);
+        const pathname = new URL(url, location.origin).pathname;
+        const cacheable = pathname !== `${adminBasePath}/account`;
+        const cached = cacheable ? pageCache.get(url) : null;
         if (cached && Date.now() - cached.createdAt < CACHE_MS) return cached.promise;
 
         const promise = fetch(url, {
@@ -1202,8 +1211,10 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
-        pageCache.set(url, { createdAt: Date.now(), promise });
-        promise.catch(() => pageCache.delete(url));
+        if (cacheable) {
+            pageCache.set(url, { createdAt: Date.now(), promise });
+            promise.catch(() => pageCache.delete(url));
+        }
         return promise;
     };
 

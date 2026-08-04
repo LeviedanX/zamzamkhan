@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\SeoSetting;
+use App\Models\User;
 use App\Support\AdminSecurity;
 use App\Support\SuspiciousContent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,9 +15,10 @@ class SecurityHardeningTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function admin(): Admin
+    private function admin(): User
     {
-        return Admin::create([
+        return User::create([
+            'is_admin' => true,
             'name' => 'Admin Security',
             'email' => 'security@gmail.com',
             'password' => 'Password-Lama-123!',
@@ -113,7 +114,7 @@ class SecurityHardeningTest extends TestCase
         $this->assertGuest('admin');
     }
 
-    public function test_password_admin_baru_wajib_memenuhi_kebijakan_kuat(): void
+    public function test_password_admin_baru_wajib_minimal_sepuluh_karakter(): void
     {
         $admin = $this->admin();
 
@@ -122,8 +123,8 @@ class SecurityHardeningTest extends TestCase
                 'current_email' => $admin->email,
                 'current_password' => 'Password-Lama-123!',
                 'email' => $admin->email,
-                'password' => 'PasswordBaru456',
-                'password_confirmation' => 'PasswordBaru456',
+                'password' => 'pendek123',
+                'password_confirmation' => 'pendek123',
             ])
             ->assertSessionHasErrors('password');
     }

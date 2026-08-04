@@ -14,10 +14,6 @@ final class AdminSecurity
 
     public static function passwordRule(): Password
     {
-        return Password::min(14)
-            ->letters()
-            ->mixedCase()
-            ->numbers()
-            ->symbols();
+        return Password::min(10);
     }
 }

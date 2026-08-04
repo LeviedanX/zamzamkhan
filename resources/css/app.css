@@ -2652,68 +2652,6 @@ section[id] { scroll-margin-top: 100px; }
 .admin-icon-btn svg { transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
 .admin-icon-btn:hover svg { transform: translateY(-1px) scale(1.06); }
 
-/* Login admin pada navbar publik: jelas, ringkas, dan tidak tertimpa style panel admin. */
-.nav-admin-login {
-    position: relative;
-    display: inline-grid;
-    height: 2.5rem;
-    width: 2.5rem;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(248, 113, 113, 0.34);
-    border-radius: 0.8rem;
-    background: linear-gradient(145deg, #a51f25, #7f1d1d);
-    color: #fff;
-    box-shadow: 0 10px 22px -14px rgba(185, 28, 28, 0.95), inset 0 1px 0 rgba(255,255,255,0.16);
-    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
-}
-.nav-admin-login::before {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: calc(100% + 0.7rem);
-    right: 0;
-    z-index: 20;
-    width: max-content;
-    max-width: 10rem;
-    border: 1px solid rgba(255,255,255,0.13);
-    border-radius: 0.65rem;
-    background: rgba(10, 6, 7, 0.94);
-    padding: 0.42rem 0.65rem;
-    color: rgba(255,255,255,0.92);
-    font-size: 0.7rem;
-    font-weight: 650;
-    line-height: 1;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-0.3rem);
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    box-shadow: 0 10px 24px -14px rgba(0,0,0,0.9);
-}
-.nav-admin-login:hover {
-    transform: translateY(-1px);
-    border-color: rgba(254, 202, 202, 0.58);
-    color: #fff;
-    filter: brightness(1.08);
-    box-shadow: 0 14px 26px -13px rgba(185, 28, 28, 1), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.nav-admin-login:hover::before,
-.nav-admin-login:focus-visible::before {
-    opacity: 1;
-    transform: translateY(0);
-}
-.nav-admin-login:active { transform: translateY(0) scale(0.97); }
-.nav-admin-login:focus-visible {
-    outline: 2px solid rgba(248, 113, 113, 0.62);
-    outline-offset: 3px;
-}
-.nav-admin-login__icon {
-    height: 1.1rem;
-    width: 1.1rem;
-    transition: transform 0.22s ease;
-}
-.nav-admin-login:hover .nav-admin-login__icon { transform: scale(1.07); }
-
 /* Hover lift kecil pada nav link (kecuali yang aktif) */
 .nav-link { transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease; }
 .nav-item .nav-link:not(.nav-link-active):hover { transform: translateY(-1px); }
@@ -4907,6 +4845,18 @@ body.whatsapp-lead-open .floating-actions,
     line-height: 1.5;
     color: var(--admin-muted);
 }
+.admin-field .admin-field__error {
+    color: #b91c1c;
+    font-weight: 700;
+}
+.admin-field :is(input, textarea, select)[aria-invalid="true"] {
+    border-color: rgba(185, 28, 28, 0.72);
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+.account-verification__error {
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
 .admin-toggle-field {
     display: flex;
     align-items: flex-start;
@@ -5990,6 +5940,40 @@ body.whatsapp-lead-open .floating-actions,
     outline-offset: 3px;
 }
 
+/* Akses admin tetap tersedia di beranda desktop tanpa menjadi CTA publik. */
+.footer-copyright {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.18rem;
+}
+.footer-admin-access { line-height: inherit; }
+.footer-admin-login {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    min-width: 1rem;
+    height: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 0.2rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    opacity: 0.78;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+.footer-admin-login:hover {
+    color: rgba(254, 202, 202, 0.82);
+    opacity: 1;
+}
+.footer-admin-login:focus-visible {
+    outline: 1px solid rgba(248, 113, 113, 0.58);
+    outline-offset: 2px;
+}
+
 /* ================= Login Admin — dark premium portal ================= */
 .login-root { background: #080404; }
 .login-page {
@@ -5999,33 +5983,17 @@ body.whatsapp-lead-open .floating-actions,
     align-items: center;
     justify-content: center;
     padding: clamp(1rem, 3vw, 2.5rem);
-    background: radial-gradient(120% 90% at 100% 0%, #2a0e0f 0%, transparent 55%),
-                linear-gradient(150deg, #050303 0%, #0c0708 48%, #1a0c0d 100%);
+    background: #080505;
     overflow-x: hidden;
     overflow-y: auto;
     isolation: isolate;
 }
-/* Grid pattern halus + fade radial */
-.login-grid {
-    position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background-image:
-        linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
-    background-size: 48px 48px;
-    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 30%, transparent 85%);
-            mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 30%, transparent 85%);
-}
-/* Radial red glow + blob */
-.login-glow { position: absolute; border-radius: 9999px; filter: blur(90px); pointer-events: none; z-index: 0; }
-.login-glow--1 { top: -10rem; right: -6rem; height: 30rem; width: 30rem; background: radial-gradient(circle, rgba(185,28,28,0.34), transparent 70%); }
-.login-glow--2 { bottom: -12rem; left: -7rem; height: 28rem; width: 28rem; background: radial-gradient(circle, rgba(127,29,29,0.28), transparent 70%); }
-
 /* Layout utama */
 .login-layout {
     position: relative;
     z-index: 1;
     display: block;
-    width: min(100%, 28rem);
+    width: min(100%, 25rem);
     overflow: visible;
 }
 .login-panel {
@@ -6038,20 +6006,13 @@ body.whatsapp-lead-open .floating-actions,
 }
 .login-card {
     position: relative;
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     border: 1px solid rgba(255,255,255,0.10);
-    background: linear-gradient(165deg, rgba(28,16,17,0.94), rgba(10,7,7,0.91));
-    padding: 2rem 1.75rem 1.9rem;
-    box-shadow: 0 30px 70px -30px rgba(0,0,0,0.85), 0 0 0 1px rgba(185,28,28,0.10),
-                inset 0 1px 0 rgba(255,255,255,0.06);
+    background: rgba(18, 11, 12, 0.96);
+    padding: 1.6rem 1.5rem;
+    box-shadow: 0 22px 55px -35px rgba(0,0,0,0.9);
 }
-/* Aksen merah tipis atas kartu */
-.login-card::before {
-    content: ""; position: absolute; top: 0; left: 1.75rem; right: 1.75rem; height: 2px; border-radius: 0 0 3px 3px;
-    background: linear-gradient(90deg, transparent, var(--color-tosca-400), var(--color-emerald-brand), transparent);
-    opacity: 0.85;
-}
-@media (min-width: 480px) { .login-card { padding: 2.25rem 2rem 2rem; } }
+@media (min-width: 480px) { .login-card { padding: 1.75rem; } }
 @media (max-width: 479px) {
     .login-page {
         align-items: flex-start;
@@ -6076,53 +6037,23 @@ body.whatsapp-lead-open .floating-actions,
         padding-top: 1.25rem;
         padding-bottom: 1.2rem;
     }
-    .login-heading h2 {
-        margin-top: 0.7rem;
-        font-size: 1.5rem;
-    }
-    .login-heading > p {
-        margin-top: 0.45rem;
-        line-height: 1.5;
-    }
     .login-card form {
         margin-top: 1rem;
     }
     .login-card form > * + * {
         margin-block-start: 0.85rem !important;
     }
-    .login-divider {
-        margin-top: 1rem;
-    }
-    .login-security-note {
-        margin-top: 0.65rem;
-    }
     .login-back {
         margin-top: 0.85rem;
     }
 }
-.login-eyebrow {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    border-radius: 9999px; padding: 0.25rem 0.7rem;
-    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-    color: #fca5a5;
-    background: rgba(185,28,28,0.14);
-    border: 1px solid rgba(185,28,28,0.35);
-}
-.login-eyebrow-dot { height: 0.36rem; width: 0.36rem; border-radius: 9999px; background: var(--color-tosca-400); box-shadow: 0 0 0 3px rgba(185,28,28,0.25); }
-.login-heading h2 {
-    margin-top: 1rem;
+.login-heading h1 {
     font-family: var(--font-display);
-    font-size: clamp(1.6rem, 5vw, 2rem);
-    font-weight: 800;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-    color: #fff;
-}
-.login-heading > p {
-    margin-top: 0.65rem;
-    font-size: 0.82rem;
-    line-height: 1.65;
-    color: rgba(255,255,255,0.52);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.16em;
+    color: rgba(255,255,255,0.96);
 }
 .login-label {
     display: block;
@@ -6171,37 +6102,8 @@ body.whatsapp-lead-open .floating-actions,
     outline-offset: 2px;
 }
 
-/* Tombol Masuk (mewarisi .btn-primary shine/glow) */
+/* Tombol masuk */
 .login-submit { width: 100%; padding-block: 0.85rem; font-size: 0.95rem; }
-.login-divider {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.4rem;
-    color: rgba(255,255,255,0.28);
-}
-.login-divider::before,
-.login-divider::after {
-    content: "";
-    height: 1px;
-    flex: 1;
-    background: rgba(255,255,255,0.08);
-}
-.login-divider span {
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-.login-security-note {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    margin-top: 0.9rem;
-    font-size: 0.7rem;
-    color: rgba(255,255,255,0.42);
-}
 
 /* Link kembali */
 .login-back {
@@ -6226,7 +6128,7 @@ body.whatsapp-lead-open .floating-actions,
 
 /* ---------- prefers-reduced-motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-    .login-glow--1, .login-glow--2, .login-card { animation: none !important; }
+    .login-card { animation: none !important; }
     .login-back, .login-back svg, .login-field-icon, .login-input, .login-pw-toggle { transition: none !important; }
     .login-back:hover { gap: 0.4rem; }
     .reveal { opacity: 1 !important; transform: none !important; transition: none; }
@@ -6243,8 +6145,8 @@ body.whatsapp-lead-open .floating-actions,
     .education-card:hover { transform: none; }
     .education-card:hover .education-card__image { transform: none; }
     .education-card, .education-card__image { transition: none !important; }
-    .admin-icon-btn:hover, .admin-icon-btn:hover svg, .nav-admin-login:hover, .nav-admin-login:hover .nav-admin-login__icon, .footer-social:hover, .nav-item .nav-link:not(.nav-link-active):hover { transform: none; }
-    .admin-icon-btn, .admin-icon-btn svg, .nav-admin-login, .nav-admin-login::before, .nav-admin-login__icon, .footer-social, .nav-link, .footer-link { transition: none !important; }
+    .admin-icon-btn:hover, .admin-icon-btn:hover svg, .footer-social:hover, .nav-item .nav-link:not(.nav-link-active):hover { transform: none; }
+    .admin-icon-btn, .admin-icon-btn svg, .footer-admin-login, .footer-social, .nav-link, .footer-link { transition: none !important; }
     .service-card:hover, .service-card:hover .service-icon-box, .service-btn:hover, .service-modal__close:hover { transform: none; }
     .service-card, .service-icon-box, .service-btn, .service-modal__close { transition: none !important; }
     .service-btn--primary::after { display: none; }

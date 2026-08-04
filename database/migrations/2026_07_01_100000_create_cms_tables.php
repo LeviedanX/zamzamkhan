@@ -8,17 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('admins', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 120);
-            $table->string('email', 160)->unique();
-            $table->string('password');
-            $table->boolean('is_active')->default(true);
-            $table->timestamp('last_login_at')->nullable();
-            $table->rememberToken();
-            $table->timestamps();
-        });
-
         Schema::create('site_settings', function (Blueprint $table) {
             $table->id();
             $table->string('company_name', 180)->default('PT Zam Zam Khan');

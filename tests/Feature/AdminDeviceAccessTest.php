@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +21,15 @@ class AdminDeviceAccessTest extends TestCase
         $this->withHeader('User-Agent', self::DESKTOP_USER_AGENT)
             ->get(route('admin.login'))
             ->assertOk()
-            ->assertSee('Masukkan kata sandi');
+            ->assertSeeText('LOGIN ADMIN')
+            ->assertDontSee('Selamat datang kembali')
+            ->assertDontSee('Masukkan kredensial administrator untuk melanjutkan ke dashboard.')
+            ->assertSee('Masukkan kata sandi')
+            ->assertDontSee('Akses terbatas')
+            ->assertDontSee('Gunakan hanya akun yang telah diotorisasi.')
+            ->assertDontSee('login-eyebrow', false)
+            ->assertDontSee('login-grid', false)
+            ->assertDontSee('login-glow', false);
     }
 
     public function test_seluruh_akses_admin_ditolak_dari_perangkat_mobile_dan_tablet(): void
@@ -55,7 +63,8 @@ class AdminDeviceAccessTest extends TestCase
 
     public function test_admin_terautentikasi_tetap_ditolak_saat_memakai_perangkat_mobile(): void
     {
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Device Test',
             'email' => 'device-test@example.com',
             'password' => 'PasswordAman123!',
@@ -68,14 +77,20 @@ class AdminDeviceAccessTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_drawer_mobile_publik_tidak_memuat_tombol_login_admin(): void
+    public function test_tombol_login_admin_hanya_berada_di_footer_beranda_desktop(): void
     {
         $response = $this->get(route('home'))->assertOk();
 
-        $this->assertStringNotContainsString(
-            'btn-outline w-full !rounded-xl',
-            $response->getContent(),
-        );
-        $response->assertSee('x-teleport="body"', false);
+        $response
+            ->assertSee('class="footer-admin-access hidden xl:block"', false)
+            ->assertSee('action="'.route('admin.access').'"', false)
+            ->assertSee('class="footer-admin-login">A</button>', false)
+            ->assertSeeInOrder(['footer-admin-access', '&copy;'], false)
+            ->assertDontSee('nav-admin-login', false)
+            ->assertSee('x-teleport="body"', false);
+
+        $this->get(route('artikel.index'))
+            ->assertOk()
+            ->assertDontSee('footer-admin-access', false);
     }
 }

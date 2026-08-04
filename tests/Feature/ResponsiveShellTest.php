@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -39,7 +39,8 @@ class ResponsiveShellTest extends TestCase
         $this->assertStringNotContainsString('login-card-in', $css);
         $this->assertStringNotContainsString('login-glow-float', $css);
 
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Responsive',
             'email' => 'responsive@uji.test',
             'password' => 'password',

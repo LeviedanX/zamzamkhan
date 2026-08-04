@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
+use App\Models\User;
 use App\Support\AdminSecurity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,14 +21,14 @@ class AccountController extends Controller
 
     public function update(Request $request)
     {
-        /** @var Admin $admin */
+        /** @var User $admin */
         $admin = $request->user('admin');
         $request->merge(['email' => strtolower(trim((string) $request->input('email')))]);
 
         $data = $request->validate([
             'current_email' => ['required', 'email'],
             'current_password' => ['required', 'string'],
-            'email' => ['required', 'email:rfc', 'max:160', 'ends_with:@gmail.com', Rule::unique('admins', 'email')->ignore($admin->id)],
+            'email' => ['required', 'email:rfc', 'max:160', 'ends_with:@gmail.com', Rule::unique('users', 'email')->ignore($admin->id)],
             'password' => ['nullable', 'confirmed', AdminSecurity::passwordRule()],
         ], [
             'current_email.required' => 'Email akun lama wajib diisi.',
@@ -36,16 +36,13 @@ class AccountController extends Controller
             'email.ends_with' => 'Email admin wajib menggunakan domain @gmail.com.',
             'email.unique' => 'Email tersebut sudah digunakan akun admin lain.',
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
-            'password.min' => 'Password baru minimal 14 karakter.',
-            'password.mixed' => 'Password baru wajib memuat huruf besar dan kecil.',
-            'password.numbers' => 'Password baru wajib memuat angka.',
-            'password.symbols' => 'Password baru wajib memuat simbol.',
+            'password.min' => 'Password baru minimal 10 karakter.',
         ]);
 
         $oldEmailValid = hash_equals(strtolower($admin->email), strtolower($data['current_email']));
         if (! $oldEmailValid || ! Hash::check($data['current_password'], $admin->password)) {
             throw ValidationException::withMessages([
-                'current_credentials' => 'Email atau password akun lama tidak cocok. Perubahan dibatalkan.',
+                'current_credentials' => 'Email atau password akun lama tidak cocok. Gunakan kredensial yang masih aktif, bukan kredensial baru.',
             ]);
         }
 
@@ -73,6 +70,8 @@ class AccountController extends Controller
         $request->session()->regenerate();
         $request->session()->put(AdminSecurity::SESSION_AUTH_VERSION, (int) $admin->auth_version);
 
-        return redirect()->route('admin.account.edit')->with('ok', 'Kredensial akun admin berhasil diperbarui.');
+        return redirect()
+            ->route('admin.account.edit', ['v' => $admin->auth_version])
+            ->with('ok', 'Kredensial akun admin berhasil diperbarui.');
     }
 }

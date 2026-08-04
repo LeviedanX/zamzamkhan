@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\Advantage;
 use App\Models\Agenda;
 use App\Models\BusinessApplication;
@@ -10,6 +9,7 @@ use App\Models\BusinessCategory;
 use App\Models\Client;
 use App\Models\Statistic;
 use App\Models\Testimonial;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -54,7 +54,8 @@ class IntegratedCmsFeaturesTest extends TestCase
     {
         $this->get(route('home'))->assertOk();
 
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin Integrasi',
             'email' => 'integrasi@uji.test',
             'password' => 'password',
@@ -112,7 +113,8 @@ class IntegratedCmsFeaturesTest extends TestCase
 
     public function test_admin_crud_uses_consistent_ui_and_complete_filters(): void
     {
-        $admin = Admin::create([
+        $admin = User::create([
+            'is_admin' => true,
             'name' => 'Admin UI',
             'email' => 'admin-ui@uji.test',
             'password' => 'password',
